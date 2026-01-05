@@ -118,7 +118,7 @@ const app = {
       <div>
         <div class="weather-main">${Math.round(d.temperature)}° — ${desc}</div>
         <div class="weather-meta">${d.city} · ${new Date(d.time).toLocaleString()}</div>
-        <div class="weather-meta">Wind: ${d.windspeed} km/h${d.humidity != null ? ' · Luftfeuchte: ' + d.humidity + '%' : ''}${d.feels_like != null ? ' · Gefühlt: ' + Math.round(d.feels_like) + '°' : ''}</div>
+        <div class="weather-meta">Wind: ${d.windspeed} km/h${d.humidity != null ? ' · Luftfeuchtigkeit: ' + d.humidity + '%' : ''}${d.feels_like != null ? ' · Gefühlt: ' + Math.round(d.feels_like) + '°' : ''}</div>
       </div>
     `;
 
@@ -135,7 +135,7 @@ const app = {
     };
 
     details.appendChild(makeDetail('Uhrzeit', this.formatHour(d.time)));
-    details.appendChild(makeDetail('Luftfeuchte', d.humidity != null ? d.humidity + '%' : '—'));
+    details.appendChild(makeDetail('Luftfeuchtigkeit', d.humidity != null ? d.humidity + '%' : '—'));
     details.appendChild(makeDetail('Wind', d.windspeed != null ? d.windspeed + ' km/h' : '—'));
     details.appendChild(makeDetail('Gefühlt', d.feels_like != null ? Math.round(d.feels_like) + '°' : '—'));
 
