@@ -9,6 +9,7 @@ const app = {
   cache() {
     this.form = document.getElementById('search-form');
     this.input = document.getElementById('city-input');
+    this.locationBtn = document.getElementById('location-btn');
     this.status = document.getElementById('status');
     this.weatherEl = document.getElementById('weather');
     this.leftCol = document.getElementById('weather-left');
@@ -30,6 +31,9 @@ const app = {
       const city = this.input.value.trim();
       if (city) this.fetchWeather(city);
     });
+    if (this.locationBtn) {
+      this.locationBtn.addEventListener('click', () => this.handleLocation());
+    }
     if (this.unitToggle) {
       this.unitToggle.addEventListener('click', (e) => {
         e.preventDefault();
@@ -139,6 +143,57 @@ const app = {
     if (active) active.scrollIntoView({ block: 'nearest' });
   },
 
+  handleLocation() {
+    if (!navigator.geolocation) {
+      alert('Geolocation ist nicht verfügbar.');
+      return;
+    }
+    this.setStatus('Ermittle Standort...');
+    navigator.geolocation.getCurrentPosition(
+      async (pos) => {
+        const { latitude, longitude } = pos.coords;
+        try {
+          const res = await fetch(`https://geocoding-api.open-meteo.com/v1/reverse?latitude=${latitude}&longitude=${longitude}&language=de`);
+          let name = 'Mein Standort';
+          if (res.ok) {
+             const data = await res.json();
+             if (data.results && data.results.length > 0) {
+               name = data.results[0].name;
+             }
+          }
+          if (this.input) this.input.value = name;
+          this.fetchForecastByCoords(latitude, longitude, name);
+        } catch (e) {
+          this.fetchForecastByCoords(latitude, longitude, 'Mein Standort');
+        }
+      },
+      (err) => {
+        console.warn('Geolocation failed, trying IP fallback...', err);
+        this.fetchLocationByIP();
+      },
+      { timeout: 10000, enableHighAccuracy: false }
+    );
+  },
+
+  async fetchLocationByIP() {
+    try {
+      this.setStatus('Ermittle Standort via IP...');
+      const res = await fetch('https://get.geojs.io/v1/ip/geo.json');
+      if (!res.ok) throw new Error('IP Location failed');
+      const data = await res.json();
+      const latitude = parseFloat(data.latitude);
+      const longitude = parseFloat(data.longitude);
+      const city = data.city || 'Mein Standort';
+      
+      if (this.input) this.input.value = city;
+      this.fetchForecastByCoords(latitude, longitude, city);
+    } catch (e) {
+      console.error(e);
+      this.setStatus('Standort konnte nicht ermittelt werden.');
+      setTimeout(() => this.setStatus(''), 3000);
+    }
+  },
+
   async fetchWeather(city) {
     try {
       // support passing a favorite object {name, lat, lon}
@@ -175,7 +230,7 @@ const app = {
 
       // Forecast: include hourly temperatures, humidity, apparent temp and daily summaries
       // Using 'current' parameter for robust current weather data including humidity/feels_like
-      const forecastUrl = `${config.API_URL}/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,apparent_temperature,weather_code,wind_speed_10m&hourly=temperature_2m,relative_humidity_2m,apparent_temperature&daily=temperature_2m_max,temperature_2m_min,weather_code&timezone=auto`;
+      const forecastUrl = `${config.API_URL}/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,apparent_temperature,weather_code,wind_speed_10m&hourly=temperature_2m,relative_humidity_2m,apparent_temperature&daily=temperature_2m_max,temperature_2m_min,weather_code,sunrise,sunset&timezone=auto`;
       const weatherRes = await fetch(forecastUrl);
       if (!weatherRes.ok) throw new Error('Wetterdaten konnten nicht geladen werden');
       const data = await weatherRes.json();
@@ -194,6 +249,8 @@ const app = {
         feels_like: current.apparent_temperature,
         hourly: data.hourly || null,
         daily: data.daily || null,
+        sunrise: data.daily?.sunrise?.[0],
+        sunset: data.daily?.sunset?.[0],
       };
 
       // store raw payload (temperatures are in °C from API)
@@ -212,7 +269,7 @@ const app = {
       this.setStatus(`Lade Wetter für ${name || lat + ',' + lon}...`);
       if (this.todaySection) this.todaySection.classList.add('hidden');
       if (this.weeklySection) this.weeklySection.classList.add('hidden');
-      const forecastUrl = `${config.API_URL}/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,apparent_temperature,weather_code,wind_speed_10m&hourly=temperature_2m,relative_humidity_2m,apparent_temperature&daily=temperature_2m_max,temperature_2m_min,weather_code&timezone=auto`;
+      const forecastUrl = `${config.API_URL}/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,apparent_temperature,weather_code,wind_speed_10m&hourly=temperature_2m,relative_humidity_2m,apparent_temperature&daily=temperature_2m_max,temperature_2m_min,weather_code,sunrise,sunset&timezone=auto`;
       const weatherRes = await fetch(forecastUrl);
       if (!weatherRes.ok) throw new Error('Wetterdaten konnten nicht geladen werden');
       const data = await weatherRes.json();
@@ -231,6 +288,8 @@ const app = {
         feels_like: current.apparent_temperature,
         hourly: data.hourly || null,
         daily: data.daily || null,
+        sunrise: data.daily?.sunrise?.[0],
+        sunset: data.daily?.sunset?.[0],
       };
       this.lastData = payload;
       this.displayWeather(this.lastData);
@@ -374,6 +433,8 @@ const app = {
     details.appendChild(makeDetail('Luftfeuchtigkeit', d.humidity != null ? d.humidity + '%' : '—'));
     details.appendChild(makeDetail('Wind', d.windspeed != null ? d.windspeed + ' km/h' : '—'));
     details.appendChild(makeDetail('Gefühlt', d.feels_like != null ? this.formatTemp(d.feels_like) : '—'));
+    if (d.sunrise) details.appendChild(makeDetail('Sonnenaufgang', this.formatHour(d.sunrise)));
+    if (d.sunset) details.appendChild(makeDetail('Sonnenuntergang', this.formatHour(d.sunset)));
 
     if (this.rightCol) this.rightCol.appendChild(details);
     else this.weatherEl.appendChild(details);
