@@ -14,7 +14,7 @@ const app = {
       await this.handleSearch(city);
     });
 
-    // Tab click handling (skeleton for future logic)
+    // Tab click handling (loads a module for each tab)
     document.querySelectorAll(".tab-item").forEach((el) => {
       el.addEventListener("click", (e) => {
         const tab = e.currentTarget.dataset.tab;
@@ -33,6 +33,8 @@ const app = {
         OpenMeteo.getDailyForecast(city),
       ]);
 
+      this.currentCity = city;
+
       const combined = {
         city,
         current: currentResp.current,
@@ -48,12 +50,31 @@ const app = {
     }
   },
 
-  switchTab(tabName) {
-    // Basic tab UI switching; actual metric logic implemented per-tab later
+  async switchTab(tabName) {
+    // UI switching
+    this.currentTab = tabName;
     document.querySelectorAll(".tab-item").forEach((el) => el.classList.toggle("active", el.dataset.tab === tabName));
     document.querySelectorAll(".tab-panel").forEach((panel) => {
       panel.hidden = panel.dataset.tabPanel !== tabName;
     });
+
+    // Load the tab-specific module and run its load() method
+    const panel = document.querySelector(`.tab-panel[data-tab-panel="${tabName}"]`);
+    if (panel) {
+      const contentEl = panel.querySelector("div") || panel;
+      contentEl.textContent = "Loading...";
+      try {
+        const mod = await import(`./tabs/${tabName}.js`);
+        if (mod && typeof mod.load === "function") {
+          await mod.load(this.currentCity);
+        } else {
+          contentEl.textContent = "No module handler for this tab.";
+        }
+      } catch (err) {
+        contentEl.textContent = `Error loading tab: ${err.message}`;
+        console.error(err);
+      }
+    }
   },
 
   displayWeather(data) {
