@@ -13,6 +13,9 @@ const app = {
     this.rightCol = document.getElementById('weather-right');
     this.todaySection = document.getElementById('today-hourly');
     this.weeklySection = document.getElementById('weekly-forecast');
+    this.unitToggle = document.getElementById('unit-toggle');
+    this.unit = 'C'; // 'C' or 'F'
+    this.lastData = null; // store raw payload (C) for re-render on toggle
   },
 
   bind() {
@@ -21,6 +24,12 @@ const app = {
       const city = this.input.value.trim();
       if (city) this.fetchWeather(city);
     });
+    if (this.unitToggle) {
+      this.unitToggle.addEventListener('click', (e) => {
+        e.preventDefault();
+        this.toggleUnit();
+      });
+    }
   },
 
   async fetchWeather(city) {
@@ -85,7 +94,9 @@ const app = {
         daily: data.daily || null,
       };
 
-      this.displayWeather(payload);
+      // store raw payload (temperatures are in °C from API)
+      this.lastData = payload;
+      this.displayWeather(this.lastData);
       this.setStatus('');
     } catch (err) {
       this.setStatus(err.message || 'Fehler bei der Anfrage');
@@ -129,7 +140,7 @@ const app = {
         <div class="weather-emoji" aria-hidden="true" style="font-size:2rem">${emoji}</div>
       </div>
       <div>
-        <div class="weather-main">${Math.round(d.temperature)}° — ${desc}</div>
+        <div class="weather-main">${this.formatTemp(d.temperature)} — ${desc}</div>
         <div class="weather-meta">${d.city}</div>
       </div>
     `;
@@ -150,7 +161,7 @@ const app = {
     details.appendChild(makeDetail('Uhrzeit', this.formatHour(d.time)));
     details.appendChild(makeDetail('Luftfeuchtigkeit', d.humidity != null ? d.humidity + '%' : '—'));
     details.appendChild(makeDetail('Wind', d.windspeed != null ? d.windspeed + ' km/h' : '—'));
-    details.appendChild(makeDetail('Gefühlt', d.feels_like != null ? Math.round(d.feels_like) + '°' : '—'));
+    details.appendChild(makeDetail('Gefühlt', d.feels_like != null ? this.formatTemp(d.feels_like) : '—'));
 
     if (this.rightCol) this.rightCol.appendChild(details);
     else this.weatherEl.appendChild(details);
@@ -179,11 +190,11 @@ const app = {
         const end = Math.min(times.length, start + 24);
         for (let i = start; i < end; i++) {
           const t = times[i];
-          const temp = Math.round(d.hourly.temperature_2m[i]);
+          const temp = d.hourly.temperature_2m[i];
           const item = document.createElement('div');
           item.className = 'hourly-item';
           item.setAttribute('role', 'listitem');
-          item.innerHTML = `<div class="hourly-time">${this.formatHour(t)}</div><div class="hourly-emoji">${this.simpleTempEmoji(d.hourly.temperature_2m[i])}</div><div class="hourly-temp">${temp}°</div>`;
+          item.innerHTML = `<div class="hourly-time">${this.formatHour(t)}</div><div class="hourly-emoji">${this.simpleTempEmoji(d.hourly.temperature_2m[i])}</div><div class="hourly-temp">${this.formatTemp(temp)}</div>`;
           hourlyContainer.appendChild(item);
         }
       } else {
@@ -204,15 +215,15 @@ const app = {
         if (this.weeklySection) this.weeklySection.classList.remove('hidden');
         for (let i = 0; i < d.daily.time.length; i++) {
           const day = d.daily.time[i];
-          const max = Array.isArray(d.daily.temperature_2m_max) ? Math.round(d.daily.temperature_2m_max[i]) : null;
-          const min = Array.isArray(d.daily.temperature_2m_min) ? Math.round(d.daily.temperature_2m_min[i]) : null;
+          const max = Array.isArray(d.daily.temperature_2m_max) ? d.daily.temperature_2m_max[i] : null;
+          const min = Array.isArray(d.daily.temperature_2m_min) ? d.daily.temperature_2m_min[i] : null;
           const wcode = Array.isArray(d.daily.weathercode) ? d.daily.weathercode[i] : null;
           const [wdesc, wemoji] = this.weatherCodeToDesc(wcode);
 
           const card = document.createElement('div');
           card.className = 'daily-card';
           card.setAttribute('role', 'listitem');
-          card.innerHTML = `<div class="daily-day">${this.formatDay(day)}</div><div class="daily-emoji" aria-hidden="true" style="font-size:1.25rem">${wemoji}</div><div class="daily-temps">${max != null ? max + '°' : '--'} / ${min != null ? min + '°' : '--'}</div>`;
+          card.innerHTML = `<div class="daily-day">${this.formatDay(day)}</div><div class="daily-emoji" aria-hidden="true" style="font-size:1.25rem">${wemoji}</div><div class="daily-temps">${max != null ? this.formatTemp(max) : '--'} / ${min != null ? this.formatTemp(min) : '--'}</div>`;
           weeklyContainer.appendChild(card);
         }
       } else {
@@ -249,6 +260,28 @@ const app = {
     if (temp <= 20) return '🌤️';
     if (temp <= 28) return '☀️';
     return '🔥';
+  },
+
+  tempCtoF(c) {
+    return c * 9 / 5 + 32;
+  },
+
+  formatTemp(valueC) {
+    if (valueC == null || isNaN(valueC)) return '--';
+    if (this.unit === 'C') return `${Math.round(valueC)}°C`;
+    return `${Math.round(this.tempCtoF(valueC))}°F`;
+  },
+
+  toggleUnit() {
+    this.unit = this.unit === 'C' ? 'F' : 'C';
+    if (this.unitToggle) {
+      const pressed = this.unit === 'F';
+      this.unitToggle.setAttribute('aria-pressed', pressed ? 'true' : 'false');
+      this.unitToggle.textContent = this.unit === 'C' ? '°C' : '°F';
+      this.unitToggle.title = this.unit === 'C' ? 'Wechsel zu °F' : 'Wechsel zu °C';
+    }
+    // re-render last data if present
+    if (this.lastData) this.displayWeather(this.lastData);
   },
 
   setStatus(text) {
