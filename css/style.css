@@ -114,6 +114,40 @@ header h1 {
     padding: 8px 4px;
 }
 
+/* Forecast section containers */
+#today-hourly, #weekly-forecast {
+    background: transparent;
+    margin-top: 28px;
+}
+
+#today-hourly > .hourly-list,
+#weekly-forecast > .weekly-grid {
+    padding: 12px;
+}
+
+#today-hourly {
+    border-radius: 12px;
+}
+
+#today-hourly h2 {
+    margin: 0 0 12px 0;
+    padding-left: 4px;
+}
+
+#today-hourly .hourly-list {
+    background: white;
+    border-radius: 10px;
+    padding: 12px;
+    box-shadow: 0 1px 6px rgba(16,24,40,0.04);
+}
+
+#weekly-forecast .weekly-grid {
+    background: white;
+    border-radius: 10px;
+    padding: 12px;
+    box-shadow: 0 1px 6px rgba(16,24,40,0.04);
+}
+
 .hourly-item {
     flex: 0 0 84px;
     background: white;
