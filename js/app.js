@@ -311,12 +311,25 @@ const app = {
       51: ['Leichter Nieselregen', '🌦️'],
       53: ['Mäßiger Nieselregen', '🌦️'],
       55: ['Starker Nieselregen', '🌧️'],
+      56: ['Leichter gefrierender Nieselregen', '🌧️❄️'],
+      57: ['Starker gefrierender Nieselregen', '🌧️❄️'],
       61: ['Leichter Regen', '🌧️'],
       63: ['Mäßiger Regen', '🌧️'],
       65: ['Starker Regen', '🌧️'],
-      71: ['Schneefall', '❄️'],
-      80: ['Regenschauer', '🌧️'],
+      66: ['Leichter gefrierender Regen', '🌧️❄️'],
+      67: ['Starker gefrierender Regen', '🌧️❄️'],
+      71: ['Leichter Schneefall', '❄️'],
+      73: ['Mäßiger Schneefall', '❄️'],
+      75: ['Starker Schneefall', '❄️'],
+      77: ['Schneegriesel', '❄️'],
+      80: ['Leichte Regenschauer', '🌦️'],
+      81: ['Mäßige Regenschauer', '🌦️'],
+      82: ['Starke Regenschauer', '🌧️'],
+      85: ['Leichte Schneeschauer', '❄️'],
+      86: ['Starke Schneeschauer', '❄️'],
       95: ['Gewitter', '⛈️'],
+      96: ['Gewitter mit leichtem Hagel', '⛈️🌨️'],
+      99: ['Gewitter mit starkem Hagel', '⛈️🌨️'],
     };
     return map[code] || ['Unbekannt', '❔'];
   },
@@ -461,6 +474,15 @@ const app = {
 
         const start = nearestIdx;
         const end = Math.min(times.length, start + 24);
+        
+        // Render Chart
+        this.renderHourlyChart(
+          times.slice(start, end), 
+          d.hourly.temperature_2m.slice(start, end),
+          d.hourly.relative_humidity_2m ? d.hourly.relative_humidity_2m.slice(start, end) : [],
+          d.hourly.apparent_temperature ? d.hourly.apparent_temperature.slice(start, end) : []
+        );
+
         for (let i = start; i < end; i++) {
           const t = times[i];
           const temp = d.hourly.temperature_2m[i];
@@ -499,7 +521,7 @@ const app = {
           const day = d.daily.time[i];
           const max = Array.isArray(d.daily.temperature_2m_max) ? d.daily.temperature_2m_max[i] : null;
           const min = Array.isArray(d.daily.temperature_2m_min) ? d.daily.temperature_2m_min[i] : null;
-          const wcode = Array.isArray(d.daily.weathercode) ? d.daily.weathercode[i] : null;
+          const wcode = Array.isArray(d.daily.weather_code) ? d.daily.weather_code[i] : (Array.isArray(d.daily.weathercode) ? d.daily.weathercode[i] : null);
           const [wdesc, wemoji] = this.weatherCodeToDesc(wcode);
 
           const card = document.createElement('div');
@@ -593,6 +615,92 @@ const app = {
       this._currentTooltip.remove();
       this._currentTooltip = null;
     }
+  },
+
+  renderHourlyChart(times, temps, humidities, apparents) {
+    const container = document.getElementById('hourly-chart');
+    if (!container) return;
+    container.innerHTML = '';
+
+    // Dimensions
+    const width = container.clientWidth || 600;
+    const height = container.clientHeight || 150;
+    const padding = 20;
+
+    // Data slice (next 24h)
+    const dataTimes = times;
+    const dataTemps = temps;
+
+    if (dataTemps.length < 2) return;
+
+    // Scales
+    const minTemp = Math.min(...dataTemps) - 2;
+    const maxTemp = Math.max(...dataTemps) + 2;
+    const range = maxTemp - minTemp;
+
+    const getX = (i) => padding + (i / (dataTemps.length - 1)) * (width - 2 * padding);
+    const getY = (temp) => height - padding - ((temp - minTemp) / range) * (height - 2 * padding);
+
+    // Generate Path
+    let d = `M ${getX(0)} ${getY(dataTemps[0])}`;
+    for (let i = 1; i < dataTemps.length; i++) {
+      // Simple line for now, could be bezier
+      d += ` L ${getX(i)} ${getY(dataTemps[i])}`;
+    }
+
+    // Area Path (close to bottom)
+    let areaD = d + ` L ${getX(dataTemps.length - 1)} ${height} L ${getX(0)} ${height} Z`;
+
+    // SVG
+    const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    svg.setAttribute('class', 'chart-svg');
+    svg.setAttribute('viewBox', `0 0 ${width} ${height}`);
+    svg.setAttribute('preserveAspectRatio', 'none');
+
+    // Defs for gradient
+    const defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
+    defs.innerHTML = `
+      <linearGradient id="chartGradient" x1="0" x2="0" y1="0" y2="1">
+        <stop offset="0%" stop-color="var(--primary-color)" stop-opacity="0.5"/>
+        <stop offset="100%" stop-color="var(--primary-color)" stop-opacity="0"/>
+      </linearGradient>
+    `;
+    svg.appendChild(defs);
+
+    // Area
+    const areaPath = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    areaPath.setAttribute('d', areaD);
+    areaPath.setAttribute('class', 'chart-area');
+    svg.appendChild(areaPath);
+
+    // Line
+    const linePath = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    linePath.setAttribute('d', d);
+    linePath.setAttribute('class', 'chart-line');
+    svg.appendChild(linePath);
+
+    // Points
+    dataTemps.forEach((temp, i) => {
+      const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+      circle.setAttribute('cx', getX(i));
+      circle.setAttribute('cy', getY(temp));
+      circle.setAttribute('r', 4);
+      circle.setAttribute('class', 'chart-point');
+      
+      // Data attributes for tooltip
+      circle.dataset.time = dataTimes[i];
+      circle.dataset.temp = temp;
+      if (humidities && humidities[i] != null) circle.dataset.humidity = humidities[i];
+      if (apparents && apparents[i] != null) circle.dataset.apparent = apparents[i];
+
+      // Tooltip handlers
+      circle.addEventListener('mouseenter', (ev) => this.showForecastTooltip(ev.currentTarget, 'hourly'));
+      circle.addEventListener('mouseleave', () => this.hideForecastTooltip());
+      
+      svg.appendChild(circle);
+    });
+
+    container.appendChild(svg);
   },
 
   tempCtoF(c) {
@@ -715,7 +823,18 @@ const app = {
   },
 
   setStatus(text) {
-    this.status.textContent = text;
+    if (!text) {
+      this.status.innerHTML = '';
+      return;
+    }
+    
+    const isLoading = text.endsWith('...');
+    if (isLoading) {
+      this.status.innerHTML = `<div class="spinner"></div><span>${text}</span>`;
+    } else {
+      // If it's not loading, it's likely an error or info message
+      this.status.innerHTML = `<span>${text}</span>`;
+    }
   },
 };
 
