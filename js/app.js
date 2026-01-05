@@ -2,6 +2,8 @@ const app = {
   init() {
     this.cache();
     this.bind();
+    this.loadFavorites();
+    this.renderFavorites();
   },
 
   cache() {
@@ -16,6 +18,7 @@ const app = {
     this.unitToggle = document.getElementById('unit-toggle');
     this.unit = 'C'; // 'C' or 'F'
     this.lastData = null; // store raw payload (C) for re-render on toggle
+    this.favContainer = document.getElementById('favorites');
   },
 
   bind() {
@@ -34,6 +37,10 @@ const app = {
 
   async fetchWeather(city) {
     try {
+      // support passing a favorite object {name, lat, lon}
+      if (city && typeof city === 'object' && city.lat && city.lon) {
+        return this.fetchForecastByCoords(city.lat, city.lon, city.name || city.city);
+      }
       this.setStatus(`Suche nach „${city}“...`);
       // hide forecast sections while loading / on new search
       if (this.todaySection) this.todaySection.classList.add('hidden');
@@ -84,6 +91,8 @@ const app = {
 
       const payload = {
         city: placeName,
+        lat,
+        lon,
         temperature: data.current_weather.temperature,
         windspeed: data.current_weather.windspeed,
         weathercode: data.current_weather.weathercode,
@@ -102,6 +111,48 @@ const app = {
       this.setStatus(err.message || 'Fehler bei der Anfrage');
       if (this.todaySection) this.todaySection.classList.add('hidden');
       if (this.weeklySection) this.weeklySection.classList.add('hidden');
+    }
+  },
+
+  async fetchForecastByCoords(lat, lon, name) {
+    try {
+      this.setStatus(`Lade Wetter für ${name || lat + ',' + lon}...`);
+      if (this.todaySection) this.todaySection.classList.add('hidden');
+      if (this.weeklySection) this.weeklySection.classList.add('hidden');
+      const forecastUrl = `${config.API_URL}/forecast?latitude=${lat}&longitude=${lon}&current_weather=true&hourly=temperature_2m,relativehumidity_2m,apparent_temperature&daily=temperature_2m_max,temperature_2m_min,weathercode&timezone=auto`;
+      const weatherRes = await fetch(forecastUrl);
+      if (!weatherRes.ok) throw new Error('Wetterdaten konnten nicht geladen werden');
+      const data = await weatherRes.json();
+
+      let humidity = null;
+      let feels_like = null;
+      try {
+        const time = data.current_weather.time;
+        const idx = data.hourly.time.indexOf(time);
+        if (idx !== -1) {
+          humidity = data.hourly.relativehumidity_2m[idx];
+          feels_like = data.hourly.apparent_temperature[idx];
+        }
+      } catch (e) {}
+
+      const payload = {
+        city: name || `${lat},${lon}`,
+        lat,
+        lon,
+        temperature: data.current_weather.temperature,
+        windspeed: data.current_weather.windspeed,
+        weathercode: data.current_weather.weathercode,
+        time: data.current_weather.time,
+        humidity,
+        feels_like,
+        hourly: data.hourly || null,
+        daily: data.daily || null,
+      };
+      this.lastData = payload;
+      this.displayWeather(this.lastData);
+      this.setStatus('');
+    } catch (err) {
+      this.setStatus(err.message || 'Fehler beim Laden');
     }
   },
 
@@ -147,6 +198,21 @@ const app = {
 
     if (this.leftCol) this.leftCol.appendChild(card);
     else this.weatherEl.appendChild(card);
+    // add favorite button
+    if (card && this.favContainer) {
+      const favBtn = document.createElement('button');
+      favBtn.className = 'fav-add';
+      favBtn.title = 'Zu Favoriten hinzufügen';
+      favBtn.textContent = '❤';
+      favBtn.style.marginLeft = '8px';
+      favBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        if (d.lat && d.lon) this.addFavorite(d.city, d.lat, d.lon);
+      });
+      // append to leftCol card header area
+      const meta = card.querySelector('.weather-meta');
+      if (meta) meta.appendChild(favBtn);
+    }
     // Details grid (humidity, wind, feels-like, time)
     const details = document.createElement('div');
     details.className = 'weather-details';
@@ -342,6 +408,63 @@ const app = {
     }
     // re-render last data if present
     if (this.lastData) this.displayWeather(this.lastData);
+  },
+
+  // Favorites management
+  loadFavorites() {
+    try {
+      const raw = localStorage.getItem('vibe_favorites');
+      this.favorites = raw ? JSON.parse(raw) : [];
+    } catch (e) {
+      this.favorites = [];
+    }
+  },
+
+  saveFavorites() {
+    try {
+      localStorage.setItem('vibe_favorites', JSON.stringify(this.favorites || []));
+    } catch (e) {}
+  },
+
+  addFavorite(name, lat, lon) {
+    if (!name || lat == null || lon == null) return;
+    this.favorites = this.favorites || [];
+    // avoid duplicates by lat/lon
+    if (this.favorites.some(f => f.lat === lat && f.lon === lon)) return;
+    this.favorites.push({ name, lat, lon });
+    this.saveFavorites();
+    this.renderFavorites();
+  },
+
+  removeFavorite(idx) {
+    if (!this.favorites) return;
+    this.favorites.splice(idx, 1);
+    this.saveFavorites();
+    this.renderFavorites();
+  },
+
+  renderFavorites() {
+    if (!this.favContainer) return;
+    this.favContainer.innerHTML = '';
+    if (!this.favorites || this.favorites.length === 0) {
+      const p = document.createElement('div');
+      p.className = 'fav-empty';
+      p.textContent = 'Keine Favoriten. Suche eine Stadt und klicke ❤';
+      this.favContainer.appendChild(p);
+      return;
+    }
+    this.favorites.forEach((f, i) => {
+      const el = document.createElement('div');
+      el.className = 'favorite-item';
+      el.innerHTML = `<div class="fav-name">${f.name}</div>`;
+      el.addEventListener('click', () => this.fetchWeather({ name: f.name, lat: f.lat, lon: f.lon }));
+      const btn = document.createElement('button');
+      btn.innerHTML = '✕';
+      btn.title = 'Entfernen';
+      btn.addEventListener('click', (e) => { e.stopPropagation(); this.removeFavorite(i); });
+      el.appendChild(btn);
+      this.favContainer.appendChild(el);
+    });
   },
 
   setStatus(text) {
