@@ -1,19 +1,52 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-<head>
+  <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>VibeCodingStudy — Weather Starter</title>
     <link rel="stylesheet" href="css/style.css" />
-    <meta name="description" content="Basic starter HTML that loads style.css and app.js" />
-</head>
-<body>
+    <meta
+      name="description"
+      content="Basic starter HTML that loads style.css and app.js"
+    />
+  </head>
+  <body>
     <div id="app">
-        <header>
-            <h1>Weather Starter</h1>
-        </header>
+      <header>
+        <h1>Weather Starter</h1>
+        <p class="lead">
+          Visuell ansprechende, responsive Wetter-App — Suche nach Stadtname
+        </p>
+        <form id="search-form" aria-label="Stadt suchen">
+          <label for="city-input" class="visually-hidden">Stadtname</label>
+          <input
+            id="city-input"
+            name="city"
+            type="search"
+            placeholder="Stadt eingeben (z. B. Berlin)"
+            aria-required="true"
+          />
+          <button id="search-btn" type="submit">Suchen</button>
+        </form>
+      </header>
+
+      <main>
+        <section id="status" aria-live="polite"></section>
+        <section id="weather" aria-label="Aktuelles Wetter"></section>
+
+        <section id="today-hourly" aria-label="Stündliche Vorhersage">
+          <h2>Heute — Stündlich</h2>
+          <div id="hourly" class="hourly-list" role="list"></div>
+        </section>
+
+        <section id="weekly-forecast" aria-label="Wochenvorhersage">
+          <h2>7-Tage Vorschau</h2>
+          <div id="weekly" class="weekly-grid" role="list"></div>
+        </section>
+      </main>
     </div>
 
+    <script src="js/config.js" defer></script>
     <script src="js/app.js" defer></script>
-</body>
+  </body>
 </html>
