@@ -204,10 +204,21 @@ const app = {
       favBtn.className = 'fav-add';
       favBtn.title = 'Zu Favoriten hinzufügen';
       favBtn.textContent = '❤';
-      favBtn.style.marginLeft = '8px';
+      // reflect current favorite state
+      const isFav = (d.lat != null && d.lon != null) ? this.isFavorite(d.lat, d.lon) : false;
+      if (isFav) favBtn.classList.add('active');
       favBtn.addEventListener('click', (e) => {
         e.stopPropagation();
-        if (d.lat && d.lon) this.addFavorite(d.city, d.lat, d.lon);
+        if (d.lat != null && d.lon != null) {
+          // toggle favorite
+          if (this.isFavorite(d.lat, d.lon)) {
+            this.removeFavoriteByCoords(d.lat, d.lon);
+            favBtn.classList.remove('active');
+          } else {
+            this.addFavorite(d.city, d.lat, d.lon);
+            favBtn.classList.add('active');
+          }
+        }
       });
       // append to leftCol card header area
       const meta = card.querySelector('.weather-meta');
@@ -429,11 +440,26 @@ const app = {
   addFavorite(name, lat, lon) {
     if (!name || lat == null || lon == null) return;
     this.favorites = this.favorites || [];
-    // avoid duplicates by lat/lon
-    if (this.favorites.some(f => f.lat === lat && f.lon === lon)) return;
+    // toggle: if exists, remove; otherwise add
+    const existsIdx = this.favorites.findIndex(f => f.lat === lat && f.lon === lon);
+    if (existsIdx !== -1) {
+      this.removeFavorite(existsIdx);
+      return;
+    }
     this.favorites.push({ name, lat, lon });
     this.saveFavorites();
     this.renderFavorites();
+  },
+
+  isFavorite(lat, lon) {
+    if (!this.favorites) return false;
+    return this.favorites.some(f => f.lat === lat && f.lon === lon);
+  },
+
+  removeFavoriteByCoords(lat, lon) {
+    if (!this.favorites) return;
+    const idx = this.favorites.findIndex(f => f.lat === lat && f.lon === lon);
+    if (idx !== -1) this.removeFavorite(idx);
   },
 
   removeFavorite(idx) {
@@ -441,6 +467,11 @@ const app = {
     this.favorites.splice(idx, 1);
     this.saveFavorites();
     this.renderFavorites();
+    // if current displayed location was removed, re-render to update heart state
+    if (this.lastData && this.lastData.lat != null && this.lastData.lon != null) {
+      const stillFav = this.isFavorite(this.lastData.lat, this.lastData.lon);
+      if (!stillFav) this.displayWeather(this.lastData);
+    }
   },
 
   renderFavorites() {
@@ -457,7 +488,11 @@ const app = {
       const el = document.createElement('div');
       el.className = 'favorite-item';
       el.innerHTML = `<div class="fav-name">${f.name}</div>`;
-      el.addEventListener('click', () => this.fetchWeather({ name: f.name, lat: f.lat, lon: f.lon }));
+      el.addEventListener('click', () => {
+        // set search field and fetch
+        if (this.input) this.input.value = f.name;
+        this.fetchWeather({ name: f.name, lat: f.lat, lon: f.lon });
+      });
       const btn = document.createElement('button');
       btn.innerHTML = '✕';
       btn.title = 'Entfernen';
