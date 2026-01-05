@@ -11,6 +11,8 @@ const app = {
     this.weatherEl = document.getElementById('weather');
     this.leftCol = document.getElementById('weather-left');
     this.rightCol = document.getElementById('weather-right');
+    this.todaySection = document.getElementById('today-hourly');
+    this.weeklySection = document.getElementById('weekly-forecast');
   },
 
   bind() {
@@ -24,6 +26,11 @@ const app = {
   async fetchWeather(city) {
     try {
       this.setStatus(`Suche nach „${city}“...`);
+      // hide forecast sections while loading / on new search
+      if (this.todaySection) this.todaySection.classList.add('hidden');
+      if (this.weeklySection) this.weeklySection.classList.add('hidden');
+      const hourlyEl = document.getElementById('hourly'); if (hourlyEl) hourlyEl.innerHTML = '';
+      const weeklyEl = document.getElementById('weekly'); if (weeklyEl) weeklyEl.innerHTML = '';
 
       // Geocoding (Open-Meteo geocoding API)
       const geoRes = await fetch(
@@ -82,6 +89,8 @@ const app = {
       this.setStatus('');
     } catch (err) {
       this.setStatus(err.message || 'Fehler bei der Anfrage');
+      if (this.todaySection) this.todaySection.classList.add('hidden');
+      if (this.weeklySection) this.weeklySection.classList.add('hidden');
     }
   },
 
@@ -150,6 +159,8 @@ const app = {
     if (hourlyContainer) {
       hourlyContainer.innerHTML = '';
       if (d.hourly && Array.isArray(d.hourly.time) && Array.isArray(d.hourly.temperature_2m)) {
+        // show today section
+        if (this.todaySection) this.todaySection.classList.remove('hidden');
         // find nearest hour index to current time (robust against formatting/timezone differences)
         const times = d.hourly.time;
         const target = d.time ? new Date(d.time).getTime() : Date.now();
@@ -180,6 +191,7 @@ const app = {
         ph.className = 'hourly-item';
         ph.textContent = 'Stündliche Daten nicht verfügbar.';
         hourlyContainer.appendChild(ph);
+        if (this.todaySection) this.todaySection.classList.remove('hidden');
       }
     }
 
@@ -188,6 +200,8 @@ const app = {
     if (weeklyContainer) {
       weeklyContainer.innerHTML = '';
       if (d.daily && Array.isArray(d.daily.time) && d.daily.time.length > 0) {
+        // show weekly section
+        if (this.weeklySection) this.weeklySection.classList.remove('hidden');
         for (let i = 0; i < d.daily.time.length; i++) {
           const day = d.daily.time[i];
           const max = Array.isArray(d.daily.temperature_2m_max) ? Math.round(d.daily.temperature_2m_max[i]) : null;
@@ -206,6 +220,7 @@ const app = {
         ph.className = 'daily-card';
         ph.textContent = 'Tagesdaten nicht verfügbar.';
         weeklyContainer.appendChild(ph);
+        if (this.weeklySection) this.weeklySection.classList.remove('hidden');
       }
     }
   },

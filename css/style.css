@@ -192,6 +192,11 @@ header h1 {
     color: #444;
 }
 
+/* Utility to hide placeholders until data is available */
+.hidden {
+    display: none !important;
+}
+
 /* Current weather details grid */
 .weather-details {
     display: grid;
