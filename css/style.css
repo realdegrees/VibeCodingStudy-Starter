@@ -72,12 +72,18 @@ body.theme-stormy {
 
 /* Adjust card backgrounds for better contrast on themes */
 body[class*="theme-"] .weather-card,
-body[class*="theme-"] .weather-details,
 body[class*="theme-"] .hourly-list,
 body[class*="theme-"] .weekly-grid,
 body[class*="theme-"] .sidebar {
     background: rgba(255, 255, 255, 0.95); /* Slightly more opaque */
     color: #1f2937; /* Force dark text inside cards */
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+}
+
+/* Ensure detail items have high contrast background on themes */
+body[class*="theme-"] .detail-item {
+    background: rgba(255, 255, 255, 0.95);
+    color: #1f2937;
     box-shadow: 0 4px 6px rgba(0,0,0,0.1);
 }
 
