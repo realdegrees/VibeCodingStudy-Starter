@@ -123,6 +123,23 @@ const app = {
     `;
 
     this.weatherEl.appendChild(card);
+    // Details grid (humidity, wind, feels-like, time)
+    const details = document.createElement('div');
+    details.className = 'weather-details';
+
+    const makeDetail = (label, value) => {
+      const el = document.createElement('div');
+      el.className = 'detail-item';
+      el.innerHTML = `<span class="detail-label">${label}</span><span class="detail-value">${value}</span>`;
+      return el;
+    };
+
+    details.appendChild(makeDetail('Uhrzeit', this.formatHour(d.time)));
+    details.appendChild(makeDetail('Luftfeuchte', d.humidity != null ? d.humidity + '%' : '—'));
+    details.appendChild(makeDetail('Wind', d.windspeed != null ? d.windspeed + ' km/h' : '—'));
+    details.appendChild(makeDetail('Gefühlt', d.feels_like != null ? Math.round(d.feels_like) + '°' : '—'));
+
+    this.weatherEl.appendChild(details);
     // Hourly
     const hourlyContainer = document.getElementById('hourly');
     if (hourlyContainer) {
