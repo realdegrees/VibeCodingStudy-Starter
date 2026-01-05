@@ -11,9 +11,30 @@
     <div id="app">
         <header>
             <h1>Weather Starter</h1>
+            <div class="header-controls">
+                <button id="unit-toggle" class="unit-toggle" aria-label="Einheit umschalten">°C</button>
+            </div>
         </header>
+        <!-- Search + Weather card: wird per JS befüllt -->
+        <section id="weather-container">
+            <form id="search-form" class="search-form" aria-label="Stadt suchen">
+                <input id="city-input" name="city" type="search" placeholder="Stadt suchen (z. B. Berlin)" aria-label="Stadt" />
+                <button type="submit">Suchen</button>
+            </form>
+
+            <div id="weather" class="weather-card hidden" aria-live="polite">
+                <div class="weather-top">
+                    <div class="temp">—<span class="unit">°C</span></div>
+                    <div class="weather-icon" aria-hidden="true">☀️</div>
+                </div>
+                <div class="meta">Lade…</div>
+                <div class="wind">Wind: —</div>
+                <!-- Forecast (filled by JS) -->
+                <div id="forecast" class="forecast hidden" aria-live="polite"></div>
+            </div>
+        </section>
     </div>
 
-    <script src="js/app.js" defer></script>
+    <script type="module" src="js/app.js"></script>
 </body>
 </html>
