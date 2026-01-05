@@ -121,8 +121,7 @@ const app = {
       </div>
       <div>
         <div class="weather-main">${Math.round(d.temperature)}° — ${desc}</div>
-        <div class="weather-meta">${d.city} · ${new Date(d.time).toLocaleString()}</div>
-        <div class="weather-meta">Wind: ${d.windspeed} km/h${d.humidity != null ? ' · Luftfeuchtigkeit: ' + d.humidity + '%' : ''}${d.feels_like != null ? ' · Gefühlt: ' + Math.round(d.feels_like) + '°' : ''}</div>
+        <div class="weather-meta">${d.city}</div>
       </div>
     `;
 

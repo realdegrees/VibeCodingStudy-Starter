@@ -73,11 +73,10 @@ header h1 {
 
 .weather-card {
     display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    align-items: flex-start;
-    gap: 12px;
-    padding: 12px;
+    flex-direction: row; /* icon left, details right */
+    align-items: center; /* center vertically to remove large whitespace */
+    gap: 16px;
+    padding: 10px;
     background: white;
     border-radius: 12px;
     box-shadow: 0 1px 4px rgba(0,0,0,0.06);
@@ -200,7 +199,34 @@ header h1 {
 }
 
 @media (min-width: 700px) {
-    .weather-card { align-items: flex-start; }
+    .weather-card { align-items: center; }
+}
+
+/* Layout inside card: emoji fixed, text stacked with equal spacing */
+.weather-card .weather-left {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 64px;
+}
+
+.weather-card .weather-left .weather-emoji {
+    font-size: 2.4rem;
+    line-height: 1;
+}
+
+.weather-card > div:last-child {
+    flex: 1 1 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 8px; /* equal vertical spacing between text rows */
+}
+
+.weather-main { margin: 0; }
+
+@media (max-width: 699px) {
+    .weather-card { flex-direction: column; align-items: flex-start; }
+    .weather-card .weather-left { flex: none; }
 }
 
 @media (min-width: 700px) {
