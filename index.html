@@ -11,9 +11,45 @@
     <div id="app">
         <header>
             <h1>Weather Starter</h1>
+            <form id="search-form" class="search-form">
+                <input id="city-input" name="city" type="search" placeholder="Search city (e.g. Berlin)" aria-label="Search city" />
+                <button type="submit">Search</button>
+            </form>
         </header>
+
+        <main>
+            <section id="tabs" class="tabs">
+                <nav class="tab-nav">
+                    <ul class="tab-list">
+                        <li class="tab-item" data-tab="temp">Temp</li>
+                        <li class="tab-item" data-tab="rain">Rain</li>
+                        <li class="tab-item" data-tab="sun">Sun</li>
+                        <li class="tab-item" data-tab="snow">Snow</li>
+                    </ul>
+                </nav>
+
+                <div class="tab-panels">
+                    <div class="tab-panel" data-tab-panel="temp">
+                        <div id="temp-content">--</div>
+                    </div>
+                    <div class="tab-panel" data-tab-panel="rain" hidden>
+                        <div id="rain-content">--</div>
+                    </div>
+                    <div class="tab-panel" data-tab-panel="sun" hidden>
+                        <div id="sun-content">--</div>
+                    </div>
+                    <div class="tab-panel" data-tab-panel="snow" hidden>
+                        <div id="snow-content">--</div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="weather-output" class="weather-output">
+                <pre id="raw-output">No data loaded.</pre>
+            </section>
+        </main>
     </div>
 
-    <script src="js/app.js" defer></script>
+    <script type="module" src="js/app.js" defer></script>
 </body>
 </html>
