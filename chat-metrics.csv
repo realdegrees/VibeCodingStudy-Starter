@@ -1,0 +1,59 @@
+Metric,Value
+Total Prompts,19
+Total Session Duration (seconds),5377.58
+Total Session Duration (minutes),89.63
+Session Start Time,2026-01-05T13:50:09.333000
+Session End Time,2026-01-05T15:19:46.914000
+Average Response Duration (seconds),92.42
+Median Response Duration (seconds),74.96
+Std Dev Response Duration (seconds),52.04
+Min Response Duration (seconds),19.3
+Max Response Duration (seconds),263.58
+25th Percentile Response Duration (seconds),65.07
+75th Percentile Response Duration (seconds),98.19
+95th Percentile Response Duration (seconds),167.15
+Average Time Between Prompts (seconds),201.2
+Median Time Between Prompts (seconds),155.24
+Std Dev Time Between Prompts (seconds),227.77
+Min Time Between Prompts (seconds),22.47
+Max Time Between Prompts (seconds),1003.54
+Prompts Per Hour,12.72
+Responses Per Minute,0.21
+Average Prompt Length (chars),268.21
+Median Prompt Length (chars),246.0
+Std Dev Prompt Length (chars),198.4
+Min Prompt Length (chars),16
+Max Prompt Length (chars),875
+Total Prompt Characters,5096
+Average Response Length (chars),952.0
+Median Response Length (chars),998.0
+Std Dev Response Length (chars),424.62
+Min Response Length (chars),189
+Max Response Length (chars),1799
+Total Response Characters,18088
+Total Characters Processed,23184
+Average Total Exchange Length (chars),1220.21
+Response to Prompt Length Ratio,3.55
+Total Context References,36
+Average Context References Per Prompt,1.89
+Median Context References Per Prompt,2.0
+Max Context References in Single Prompt,2
+Prompts With Context References,18
+Prompts Without Context References,1
+Percentage Prompts With Context,94.74
+Characters Per Second (Response Generation),10.3
+Average Response Speed (chars/sec),10.3
+Average Time to First Progress (ms),22852.21
+Median Time to First Progress (ms),19160.0
+Average Total Elapsed Time (ms),92347.42
+Total Processing Time (seconds),1754.6
+Total Time Spent Waiting (ms),87238
+Total Time Spent Waiting (seconds),87.24
+Average Time Spent Waiting Per Request (ms),4591.47
+--- Model Usage Statistics ---,
+Unique Models Used,1
+Model 1: copilot/gpt-5-mini,19 requests (100.0%)
+  → Avg Response Time,92.42 sec
+  → Avg Response Length,952.0 chars
+Total Content References,19
+Average Content References Per Request,1.0
