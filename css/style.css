@@ -75,16 +75,16 @@ body[class*="theme-"] .weather-card,
 body[class*="theme-"] .hourly-list,
 body[class*="theme-"] .weekly-grid,
 body[class*="theme-"] .sidebar {
-    background: rgba(255, 255, 255, 0.95); /* Slightly more opaque */
+    /* background removed to allow gradients to show */
     color: #1f2937; /* Force dark text inside cards */
-    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
 }
 
 /* Ensure detail items have high contrast background on themes */
 body[class*="theme-"] .detail-item {
-    background: rgba(255, 255, 255, 0.95);
+    /* background removed to allow gradients to show */
     color: #1f2937;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
 }
 
 /* Force dark text on specific children to override theme inheritance */
@@ -120,14 +120,14 @@ body[class*="theme-"] .sidebar {
     top: 20px;
     bottom: 20px;
     width: 280px; /* Slightly wider */
-    background: rgba(255, 255, 255, 0.8);
+    background: linear-gradient(145deg, rgba(255, 255, 255, 0.95) 0%, rgba(190, 220, 255, 0.6) 100%);
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
     border-radius: 24px;
     padding: 24px;
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.05);
     z-index: 50;
-    border: 1px solid rgba(255, 255, 255, 0.4);
+    border: 1px solid rgba(255, 255, 255, 0.6);
     display: flex;
     flex-direction: column;
     transition: transform 0.3s ease;
@@ -172,7 +172,7 @@ body[class*="theme-"] .sidebar {
     align-items: center;
     padding: 14px 16px;
     border-radius: 16px;
-    background: rgba(255, 255, 255, 0.5);
+    background: linear-gradient(145deg, rgba(255, 255, 255, 0.6) 0%, rgba(255, 255, 255, 0.3) 100%);
     border: 1px solid rgba(255, 255, 255, 0.6);
     cursor: pointer;
     transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
@@ -319,12 +319,12 @@ body[class*="theme-"] .lead {
     gap: 12px;
     align-items: center;
     margin-bottom: 0;
-    background: rgba(255, 255, 255, 0.9);
+    background: linear-gradient(135deg, #ffffff 0%, #dbeafe 100%);
     padding: 8px;
     border-radius: 20px;
     box-shadow: 0 8px 24px rgba(0,0,0,0.08);
-    border: 1px solid rgba(255,255,255,0.5);
-    backdrop-filter: blur(8px);
+    border: 1px solid rgba(255,255,255,0.8);
+    backdrop-filter: blur(12px);
     position: relative; /* Ensure z-index context */
 }
 
@@ -414,8 +414,8 @@ body[class*="theme-"] .lead {
 
 /* Dark theme overrides for search */
 body[class*="theme-"] #search-form {
-    background: rgba(0, 0, 0, 0.3);
-    border-color: rgba(255, 255, 255, 0.1);
+    background: linear-gradient(135deg, rgba(40, 40, 40, 0.6) 0%, rgba(20, 20, 20, 0.6) 100%);
+    border-color: rgba(255, 255, 255, 0.15);
 }
 
 body[class*="theme-"] #city-input {
@@ -597,12 +597,12 @@ body[class*="theme-"] .unit-toggle {
     text-align: center;
     gap: 16px;
     padding: 32px;
-    background: rgba(255, 255, 255, 0.8);
+    background: linear-gradient(145deg, rgba(255, 255, 255, 0.95) 0%, rgba(190, 220, 255, 0.6) 100%);
     backdrop-filter: blur(12px);
     border-radius: 24px;
     box-shadow: 0 8px 32px rgba(0,0,0,0.05);
     height: 100%; 
-    border: 1px solid rgba(255,255,255,0.5);
+    border: 1px solid rgba(255,255,255,0.6);
     transition: transform 0.3s ease;
 }
 
@@ -747,13 +747,13 @@ body[class*="theme-"] #weekly-forecast h2 {
 
 .hourly-item {
     flex: 0 0 100px;
-    background: rgba(255, 255, 255, 0.8);
+    background: linear-gradient(145deg, rgba(255, 255, 255, 0.95) 0%, rgba(190, 220, 255, 0.6) 100%);
     backdrop-filter: blur(8px);
     border-radius: 20px;
     padding: 16px 12px;
     text-align: center;
     box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-    border: 1px solid rgba(255,255,255,0.5);
+    border: 1px solid rgba(255,255,255,0.6);
     transition: transform 0.2s;
 }
 
@@ -788,13 +788,13 @@ body[class*="theme-"] #weekly-forecast h2 {
 }
 
 .daily-card {
-    background: rgba(255, 255, 255, 0.8);
+    background: linear-gradient(145deg, rgba(255, 255, 255, 0.95) 0%, rgba(190, 220, 255, 0.6) 100%);
     backdrop-filter: blur(8px);
     border-radius: 20px;
     padding: 20px;
     text-align: center;
     box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-    border: 1px solid rgba(255,255,255,0.5);
+    border: 1px solid rgba(255,255,255,0.6);
     transition: transform 0.2s;
 }
 
@@ -841,9 +841,9 @@ body[class*="theme-"] #weekly-forecast h2 {
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    background: rgba(255, 255, 255, 0.8);
+    background: linear-gradient(145deg, rgba(255, 255, 255, 0.95) 0%, rgba(190, 220, 255, 0.6) 100%);
     backdrop-filter: blur(8px);
-    border: 1px solid rgba(255,255,255,0.5);
+    border: 1px solid rgba(255,255,255,0.6);
     border-radius: 20px;
     padding: 20px;
     text-align: center;
