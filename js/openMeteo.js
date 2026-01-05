@@ -64,7 +64,7 @@ export async function getCurrentWeather(cityName) {
  */
 export async function getHourlyForecast(cityName, options = {}) {
   const {
-    hourly = ["temperature_2m", "relativehumidity_2m"],
+    hourly = ["temperature_2m"],
     startDate = new Date(),
     endDate = new Date(new Date().getTime() + 24 * 60 * 60 * 1000),
   } = options;
@@ -82,11 +82,48 @@ export async function getHourlyForecast(cityName, options = {}) {
 }
 
 /**
+ * Fetch hourly data for a city for a given list of hourly variables.
+ */
+export async function getHourlyByVariables(cityName, variables = [], options = {}) {
+  const vars = Array.isArray(variables) ? variables : [variables];
+  if (vars.length === 0) {
+    throw new Error("No hourly variables requested");
+  }
+  return await getHourlyForecast(cityName, { ...options, hourly: vars });
+}
+
+/**
+ * Convenience: fetch common hourly groups by type.
+ */
+export async function getHourlyByType(cityName, type, options = {}) {
+  const map = {
+    rain: ["precipitation", "rain", "showers", "precipitation_probability"],
+    sun: ["shortwave_radiation", "is_day"],
+    snow: ["snowfall", "snow_depth"],
+    temp: ["temperature_2m", "apparent_temperature"],
+    wind: ["wind_speed_10m", "wind_gusts_10m", "wind_direction_10m"],
+  };
+
+  const variables = map[type] || [type];
+  return await getHourlyByVariables(cityName, variables, options);
+}
+
+/**
  * Get daily forecast for a city.
  */
 export async function getDailyForecast(cityName, options = {}) {
   const {
     daily = ["temperature_2m_max", "temperature_2m_min", "precipitation_sum"],
+    hourly = [
+      "temperature_2m",
+      "precipitation",
+      "snowfall",
+      "rain",
+      "showers",
+      "weathercode",
+      "shortwave_radiation",
+      "wind_speed_10m",
+    ],
     startDate = new Date(),
     endDate = new Date(new Date().getTime() + 7 * 24 * 60 * 60 * 1000),
   } = options;
@@ -95,11 +132,13 @@ export async function getDailyForecast(cityName, options = {}) {
   const start = formatDateToYMD(startDate);
   const end = formatDateToYMD(endDate);
   const dailyParam = daily.join(",");
-  const url = `${OPEN_METEO_BASE}?latitude=${location.latitude}&longitude=${location.longitude}&daily=${dailyParam}&start_date=${start}&end_date=${end}&timezone=auto`;
+  const hourlyParam = hourly.join(",");
+  const url = `${OPEN_METEO_BASE}?latitude=${location.latitude}&longitude=${location.longitude}&daily=${dailyParam}&hourly=${hourlyParam}&start_date=${start}&end_date=${end}&timezone=auto`;
   const data = await fetchJson(url);
   return {
     location,
     daily: data.daily,
+    hourly: data.hourly,
   };
 }
 
@@ -108,4 +147,6 @@ export default {
   getCurrentWeather,
   getHourlyForecast,
   getDailyForecast,
+  getHourlyByVariables,
+  getHourlyByType,
 };

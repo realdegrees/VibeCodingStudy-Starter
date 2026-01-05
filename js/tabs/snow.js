@@ -2,6 +2,7 @@
  * Snow tab logic
  */
 import OpenMeteo from "../openMeteo.js";
+import { createBarChart } from "../charts/simpleCharts.js";
 
 /**
  * Load snowfall metrics for the given city and render into the snow panel.
@@ -13,21 +14,23 @@ export async function load(city) {
     return null;
   }
 
-  el.textContent = "Loading snow data...";
-  const data = await OpenMeteo.getDailyForecast(city, {
-    daily: ["snowfall_sum"],
-  });
+  const canvas = document.getElementById("snow-canvas");
+  el.hidden = true;
+  canvas.hidden = false;
+  const chart = createBarChart(canvas, { fillStyle: "#95a5a6", title: `Snowfall — ${city}`, yLabel: "cm" });
 
-  if (!data || !data.daily) {
+  const data = await OpenMeteo.getHourlyByType(city, "snow", { startDate: new Date(), endDate: new Date(new Date().getTime() + 48 * 60 * 60 * 1000) });
+
+  if (!data || !data.hourly) {
+    el.hidden = false;
     el.textContent = "No snow data available.";
+    canvas.hidden = true;
     return data;
   }
 
-  const dates = data.daily.time || [];
-  const snow = data.daily.snowfall_sum || [];
-
-  const lines = dates.map((d, i) => `${d}: ${snow[i]} cm`);
-  el.textContent = lines.join("\n");
+  const dates = data.hourly.time || [];
+  const snow = data.hourly.snowfall || [];
+  chart.update({ labels: dates, series: snow });
   return data;
 }
 
