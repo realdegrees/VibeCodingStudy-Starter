@@ -191,10 +191,19 @@ const app = {
         for (let i = start; i < end; i++) {
           const t = times[i];
           const temp = d.hourly.temperature_2m[i];
+          const hum = Array.isArray(d.hourly.relativehumidity_2m) ? d.hourly.relativehumidity_2m[i] : null;
+          const app = Array.isArray(d.hourly.apparent_temperature) ? d.hourly.apparent_temperature[i] : null;
           const item = document.createElement('div');
           item.className = 'hourly-item';
           item.setAttribute('role', 'listitem');
-          item.innerHTML = `<div class="hourly-time">${this.formatHour(t)}</div><div class="hourly-emoji">${this.simpleTempEmoji(d.hourly.temperature_2m[i])}</div><div class="hourly-temp">${this.formatTemp(temp)}</div>`;
+          item.dataset.time = t;
+          if (hum != null) item.dataset.humidity = hum;
+          if (app != null) item.dataset.apparent = app;
+          item.dataset.temp = temp;
+          item.innerHTML = `<div class="hourly-time">${this.formatHour(t)}</div><div class="hourly-emoji">${this.simpleTempEmoji(temp)}</div><div class="hourly-temp">${this.formatTemp(temp)}</div>`;
+          // tooltip handlers
+          item.addEventListener('mouseenter', (ev) => this.showForecastTooltip(ev.currentTarget, 'hourly'));
+          item.addEventListener('mouseleave', () => this.hideForecastTooltip());
           hourlyContainer.appendChild(item);
         }
       } else {
@@ -223,7 +232,15 @@ const app = {
           const card = document.createElement('div');
           card.className = 'daily-card';
           card.setAttribute('role', 'listitem');
+          card.dataset.day = day;
+          card.dataset.max = max;
+          card.dataset.min = min;
+          card.dataset.wcode = wcode;
+          card.dataset.wdesc = wdesc;
           card.innerHTML = `<div class="daily-day">${this.formatDay(day)}</div><div class="daily-emoji" aria-hidden="true" style="font-size:1.25rem">${wemoji}</div><div class="daily-temps">${max != null ? this.formatTemp(max) : '--'} / ${min != null ? this.formatTemp(min) : '--'}</div>`;
+          // tooltip handlers
+          card.addEventListener('mouseenter', (ev) => this.showForecastTooltip(ev.currentTarget, 'daily'));
+          card.addEventListener('mouseleave', () => this.hideForecastTooltip());
           weeklyContainer.appendChild(card);
         }
       } else {
@@ -260,6 +277,49 @@ const app = {
     if (temp <= 20) return '🌤️';
     if (temp <= 28) return '☀️';
     return '🔥';
+  },
+
+  // Tooltip helpers
+  showForecastTooltip(el, type) {
+    this.hideForecastTooltip();
+    const tooltip = document.createElement('div');
+    tooltip.className = 'tooltip';
+    let html = '';
+    if (type === 'hourly') {
+      const time = el.dataset.time;
+      const temp = el.dataset.temp;
+      const hum = el.dataset.humidity;
+      const app = el.dataset.apparent;
+      html += `<div><span class="k">Zeit:</span><span class="v">${this.formatHour(time)}</span></div>`;
+      html += `<div><span class="k">Temperatur:</span><span class="v">${this.formatTemp(Number(temp))}</span></div>`;
+      if (hum != null) html += `<div><span class="k">Luftfeuchte:</span><span class="v">${hum}%</span></div>`;
+      if (app != null) html += `<div><span class="k">Gefühlt:</span><span class="v">${this.formatTemp(Number(app))}</span></div>`;
+    } else if (type === 'daily') {
+      const day = el.dataset.day;
+      const max = el.dataset.max;
+      const min = el.dataset.min;
+      const wdesc = el.dataset.wdesc;
+      html += `<div><span class="k">Tag:</span><span class="v">${this.formatDay(day)}</span></div>`;
+      html += `<div><span class="k">Wetter:</span><span class="v">${wdesc}</span></div>`;
+      if (max != null || min != null) html += `<div><span class="k">Max / Min:</span><span class="v">${max != null ? this.formatTemp(Number(max)) : '--'} / ${min != null ? this.formatTemp(Number(min)) : '--'}</span></div>`;
+    }
+    tooltip.innerHTML = html;
+    document.body.appendChild(tooltip);
+    // position tooltip centered above element
+    const rect = el.getBoundingClientRect();
+    const tRect = tooltip.getBoundingClientRect();
+    const top = rect.top + window.scrollY - tRect.height - 8;
+    const left = rect.left + window.scrollX + (rect.width - tRect.width) / 2;
+    tooltip.style.top = `${Math.max(8, top)}px`;
+    tooltip.style.left = `${Math.max(8, left)}px`;
+    this._currentTooltip = tooltip;
+  },
+
+  hideForecastTooltip() {
+    if (this._currentTooltip) {
+      this._currentTooltip.remove();
+      this._currentTooltip = null;
+    }
   },
 
   tempCtoF(c) {

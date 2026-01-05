@@ -166,6 +166,23 @@ header h1 {
     box-shadow: 0 1px 6px rgba(16,24,40,0.04);
 }
 
+/* Tooltip */
+.tooltip {
+    position: absolute;
+    background: rgba(17,24,39,0.95);
+    color: #fff;
+    padding: 8px 10px;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    box-shadow: 0 6px 18px rgba(2,6,23,0.4);
+    z-index: 9999;
+    pointer-events: none;
+    max-width: 260px;
+}
+
+.tooltip .k { color: #9aa6b2; font-weight: 600; margin-right:6px }
+.tooltip .v { color: #fff }
+
 .hourly-item {
     flex: 0 0 84px;
     background: white;
