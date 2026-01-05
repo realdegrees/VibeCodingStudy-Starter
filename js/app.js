@@ -19,6 +19,9 @@ const app = {
     this.unit = 'C'; // 'C' or 'F'
     this.lastData = null; // store raw payload (C) for re-render on toggle
     this.favContainer = document.getElementById('favorites');
+    this.suggestions = document.getElementById('suggestions');
+    this.suggestionItems = [];
+    this.suggestionIndex = -1;
   },
 
   bind() {
@@ -33,6 +36,107 @@ const app = {
         this.toggleUnit();
       });
     }
+    // autocomplete handlers
+    if (this.input) {
+      this.input.addEventListener('input', (e) => {
+        const q = e.target.value.trim();
+        this.debouncedSuggest(q);
+      });
+      this.input.addEventListener('keydown', (e) => this.handleInputKeydown(e));
+      document.addEventListener('click', (e) => {
+        if (!this.suggestions) return;
+        if (!this.suggestions.contains(e.target) && e.target !== this.input) this.hideSuggestions();
+      });
+    }
+  },
+
+  // debounce helper
+  debouncedSuggest: (function () {
+    let timer = null;
+    return function (q) {
+      clearTimeout(timer);
+      timer = setTimeout(() => { app.fetchSuggestions(q); }, 300);
+    };
+  })(),
+
+  async fetchSuggestions(q) {
+    if (!q || q.length < 2) { this.hideSuggestions(); return; }
+    try {
+      const res = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(q)}&count=6`);
+      if (!res.ok) return this.hideSuggestions();
+      const data = await res.json();
+      const results = data.results || [];
+      this.showSuggestions(results);
+    } catch (e) { this.hideSuggestions(); }
+  },
+
+  showSuggestions(list) {
+    if (!this.suggestions) return;
+    this.suggestions.innerHTML = '';
+    this.suggestionItems = [];
+    this.suggestionIndex = -1;
+    if (!list || list.length === 0) { this.hideSuggestions(); return; }
+    list.forEach((p, i) => {
+      const li = document.createElement('li');
+      li.className = 'suggestion-item';
+      li.setAttribute('role', 'option');
+      const name = `${p.name}${p.admin1 ? ', ' + p.admin1 : ''}${p.country ? ', ' + p.country : ''}`;
+      li.innerHTML = `<div class="suggestion-name">${name}</div><div class="suggestion-sub">${p.latitude.toFixed(2)}, ${p.longitude.toFixed(2)}</div>`;
+      li.dataset.lat = p.latitude;
+      li.dataset.lon = p.longitude;
+      li.dataset.name = name;
+      li.addEventListener('click', () => {
+        if (this.input) this.input.value = name;
+        this.hideSuggestions();
+        this.fetchWeather({ name, lat: p.latitude, lon: p.longitude });
+      });
+      this.suggestions.appendChild(li);
+      this.suggestionItems.push(li);
+    });
+    this.suggestions.classList.remove('hidden');
+  },
+
+  hideSuggestions() {
+    if (!this.suggestions) return;
+    this.suggestions.classList.add('hidden');
+    this.suggestions.innerHTML = '';
+    this.suggestionItems = [];
+    this.suggestionIndex = -1;
+  },
+
+  handleInputKeydown(e) {
+    if (!this.suggestionItems || this.suggestionItems.length === 0) return;
+    const key = e.key;
+    if (key === 'ArrowDown') {
+      e.preventDefault();
+      this.suggestionIndex = Math.min(this.suggestionIndex + 1, this.suggestionItems.length - 1);
+      this.updateSuggestionActive();
+    } else if (key === 'ArrowUp') {
+      e.preventDefault();
+      this.suggestionIndex = Math.max(this.suggestionIndex - 1, 0);
+      this.updateSuggestionActive();
+    } else if (key === 'Enter') {
+      if (this.suggestionIndex >= 0 && this.suggestionItems[this.suggestionIndex]) {
+        e.preventDefault();
+        const li = this.suggestionItems[this.suggestionIndex];
+        const name = li.dataset.name;
+        const lat = Number(li.dataset.lat);
+        const lon = Number(li.dataset.lon);
+        if (this.input) this.input.value = name;
+        this.hideSuggestions();
+        this.fetchWeather({ name, lat, lon });
+      }
+    } else if (key === 'Escape') {
+      this.hideSuggestions();
+    }
+  },
+
+  updateSuggestionActive() {
+    this.suggestionItems.forEach((it, idx) => {
+      if (idx === this.suggestionIndex) it.classList.add('active'); else it.classList.remove('active');
+    });
+    const active = this.suggestionItems[this.suggestionIndex];
+    if (active) active.scrollIntoView({ block: 'nearest' });
   },
 
   async fetchWeather(city) {
@@ -178,7 +282,48 @@ const app = {
     return map[code] || ['Unbekannt', '❔'];
   },
 
+  updateTheme(code) {
+    // Remove existing theme classes
+    document.body.classList.remove(
+      'theme-sunny', 'theme-cloudy', 'theme-rainy', 
+      'theme-snowy', 'theme-foggy', 'theme-stormy'
+    );
+
+    let themeClass = '';
+    
+    // Map WMO codes to themes
+    if (code === 0 || code === 1) {
+      themeClass = 'theme-sunny';
+    } else if (code === 2 || code === 3) {
+      themeClass = 'theme-cloudy';
+    } else if (code === 45 || code === 48) {
+      themeClass = 'theme-foggy';
+    } else if (
+      (code >= 51 && code <= 67) || 
+      (code >= 80 && code <= 82)
+    ) {
+      themeClass = 'theme-rainy';
+    } else if (
+      (code >= 71 && code <= 77) || 
+      (code >= 85 && code <= 86)
+    ) {
+      themeClass = 'theme-snowy';
+    } else if (code >= 95 && code <= 99) {
+      themeClass = 'theme-stormy';
+    } else {
+      // Default fallback if code not matched (e.g. unknown)
+      themeClass = 'theme-cloudy'; 
+    }
+
+    if (themeClass) {
+      document.body.classList.add(themeClass);
+    }
+  },
+
   displayWeather(d) {
+    // Update theme based on weather code
+    this.updateTheme(d.weathercode);
+
     // Clear left/right columns explicitly
     if (this.leftCol) this.leftCol.innerHTML = '';
     if (this.rightCol) this.rightCol.innerHTML = '';

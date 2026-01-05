@@ -9,6 +9,66 @@
 body {
     background-color: var(--background);
     color: var(--text-color);
+    transition: background 0.5s ease, color 0.5s ease;
+    min-height: 100vh;
+}
+
+/* Dynamic Weather Themes */
+body.theme-sunny {
+    background: linear-gradient(135deg, #56CCF2, #2F80ED); /* Bright Blue */
+    color: #fff;
+    --text-color: #fff;
+    --background: transparent;
+}
+
+body.theme-cloudy {
+    background: linear-gradient(135deg, #bdc3c7, #2c3e50); /* Greyish Blue */
+    color: #fff;
+    --text-color: #fff;
+    --background: transparent;
+}
+
+body.theme-rainy {
+    background: linear-gradient(135deg, #4b6cb7, #182848); /* Dark Blue */
+    color: #fff;
+    --text-color: #fff;
+    --background: transparent;
+}
+
+body.theme-snowy {
+    background: linear-gradient(135deg, #E0EAFC, #CFDEF3); /* Very Light Blue/White */
+    color: #333;
+    --text-color: #333;
+    --background: transparent;
+}
+
+body.theme-foggy {
+    background: linear-gradient(135deg, #757F9A, #D7DDE8); /* Metallic Grey */
+    color: #333;
+    --text-color: #333;
+    --background: transparent;
+}
+
+body.theme-stormy {
+    background: linear-gradient(135deg, #232526, #414345); /* Dark Grey/Black */
+    color: #fff;
+    --text-color: #fff;
+    --background: transparent;
+}
+
+/* Adjust card backgrounds for better contrast on themes */
+body[class*="theme-"] .weather-card,
+body[class*="theme-"] .details-grid,
+body[class*="theme-"] .hourly-scroll,
+body[class*="theme-"] .weekly-list,
+body[class*="theme-"] .sidebar {
+    background: rgba(255, 255, 255, 0.9);
+    color: #333; /* Force dark text inside cards */
+}
+
+/* Ensure sidebar text is readable */
+body[class*="theme-"] .sidebar {
+    color: #333;
 }
 
 #app {
@@ -95,6 +155,38 @@ header h1 {
     align-items: center;
     margin-bottom: 16px;
 }
+
+/* Suggestions dropdown */
+#search-form { position: relative; }
+.suggestions {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: calc(100% + 8px);
+    background: #fff;
+    border: 1px solid rgba(34,49,63,0.06);
+    border-radius: 8px;
+    box-shadow: 0 8px 24px rgba(2,6,23,0.08);
+    max-height: 240px;
+    overflow: auto;
+    z-index: 999;
+    list-style: none;
+    margin: 0;
+    padding: 6px;
+}
+.suggestion-item {
+    padding: 8px 10px;
+    border-radius: 6px;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+}
+.suggestion-item:hover,
+.suggestion-item.active {
+    background: rgba(52,152,219,0.08);
+}
+.suggestion-name { font-weight: 600; }
+.suggestion-sub { font-size: 0.85rem; color: #6b7280 }
 
 #city-input {
     flex: 1 1 320px;
