@@ -127,13 +127,25 @@ const app = {
     const hourlyContainer = document.getElementById('hourly');
     if (hourlyContainer) {
       hourlyContainer.innerHTML = '';
-      if (d.hourly && d.hourly.time && d.hourly.temperature_2m) {
-        // find current index
-        const nowIdx = d.hourly.time.indexOf(d.time);
-        const start = nowIdx === -1 ? 0 : nowIdx;
-        const end = Math.min(d.hourly.time.length, start + 24);
+      if (d.hourly && Array.isArray(d.hourly.time) && Array.isArray(d.hourly.temperature_2m)) {
+        // find nearest hour index to current time (robust against formatting/timezone differences)
+        const times = d.hourly.time;
+        const target = d.time ? new Date(d.time).getTime() : Date.now();
+        let nearestIdx = 0;
+        let nearestDiff = Infinity;
+        for (let i = 0; i < times.length; i++) {
+          const tms = new Date(times[i]).getTime();
+          const diff = Math.abs(tms - target);
+          if (diff < nearestDiff) {
+            nearestDiff = diff;
+            nearestIdx = i;
+          }
+        }
+
+        const start = nearestIdx;
+        const end = Math.min(times.length, start + 24);
         for (let i = start; i < end; i++) {
-          const t = d.hourly.time[i];
+          const t = times[i];
           const temp = Math.round(d.hourly.temperature_2m[i]);
           const item = document.createElement('div');
           item.className = 'hourly-item';
@@ -142,7 +154,10 @@ const app = {
           hourlyContainer.appendChild(item);
         }
       } else {
-        hourlyContainer.textContent = 'Stündliche Daten nicht verfügbar.';
+        const ph = document.createElement('div');
+        ph.className = 'hourly-item';
+        ph.textContent = 'Stündliche Daten nicht verfügbar.';
+        hourlyContainer.appendChild(ph);
       }
     }
 
@@ -150,12 +165,12 @@ const app = {
     const weeklyContainer = document.getElementById('weekly');
     if (weeklyContainer) {
       weeklyContainer.innerHTML = '';
-      if (d.daily && d.daily.time) {
+      if (d.daily && Array.isArray(d.daily.time) && d.daily.time.length > 0) {
         for (let i = 0; i < d.daily.time.length; i++) {
           const day = d.daily.time[i];
-          const max = d.daily.temperature_2m_max ? Math.round(d.daily.temperature_2m_max[i]) : null;
-          const min = d.daily.temperature_2m_min ? Math.round(d.daily.temperature_2m_min[i]) : null;
-          const wcode = d.daily.weathercode ? d.daily.weathercode[i] : null;
+          const max = Array.isArray(d.daily.temperature_2m_max) ? Math.round(d.daily.temperature_2m_max[i]) : null;
+          const min = Array.isArray(d.daily.temperature_2m_min) ? Math.round(d.daily.temperature_2m_min[i]) : null;
+          const wcode = Array.isArray(d.daily.weathercode) ? d.daily.weathercode[i] : null;
           const [wdesc, wemoji] = this.weatherCodeToDesc(wcode);
 
           const card = document.createElement('div');
@@ -165,7 +180,10 @@ const app = {
           weeklyContainer.appendChild(card);
         }
       } else {
-        weeklyContainer.textContent = 'Tagesdaten nicht verfügbar.';
+        const ph = document.createElement('div');
+        ph.className = 'daily-card';
+        ph.textContent = 'Tagesdaten nicht verfügbar.';
+        weeklyContainer.appendChild(ph);
       }
     }
   },
