@@ -325,10 +325,18 @@ body[class*="theme-"] .lead {
     box-shadow: 0 8px 24px rgba(0,0,0,0.08);
     border: 1px solid rgba(255,255,255,0.5);
     backdrop-filter: blur(8px);
+    position: relative; /* Ensure z-index context */
+}
+
+.search-wrapper {
+    flex: 1;
+    position: relative; /* Anchor for absolute suggestions */
+    display: flex;
+    align-items: center;
 }
 
 #city-input {
-    flex: 1;
+    width: 100%;
     padding: 14px 20px;
     border: none;
     background: transparent;
@@ -340,6 +348,110 @@ body[class*="theme-"] .lead {
 #city-input:focus {
     outline: none;
     box-shadow: none;
+}
+
+/* Autocomplete Suggestions */
+.suggestions {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 16px;
+    margin-top: 8px;
+    padding: 0;
+    list-style: none;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255,255,255,0.5);
+    z-index: 1000;
+    overflow: hidden;
+    max-height: 300px;
+    overflow-y: auto;
+    display: none; /* Hidden by default */
+}
+
+.suggestions:not(.hidden) {
+    display: block;
+    animation: slideDown 0.2s ease-out;
+}
+
+.suggestions li {
+    padding: 12px 20px;
+    cursor: pointer;
+    border-bottom: 1px solid rgba(0,0,0,0.05);
+    transition: background 0.2s;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+}
+
+.suggestion-name {
+    font-weight: 600;
+    color: var(--text-color);
+    font-size: 1rem;
+    line-height: 1.2;
+}
+
+.suggestion-sub {
+    font-size: 0.85rem;
+    color: #6b7280;
+}
+
+.suggestions li:last-child {
+    border-bottom: none;
+}
+
+.suggestions li:hover, .suggestions li.selected {
+    background: rgba(52, 152, 219, 0.1);
+}
+
+.suggestions li:hover .suggestion-name, 
+.suggestions li.selected .suggestion-name {
+    color: var(--primary-color);
+}
+
+/* Dark theme overrides for search */
+body[class*="theme-"] #search-form {
+    background: rgba(0, 0, 0, 0.3);
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+body[class*="theme-"] #city-input {
+    color: #fff;
+}
+
+body[class*="theme-"] #city-input::placeholder {
+    color: rgba(255, 255, 255, 0.6);
+}
+
+body[class*="theme-"] .suggestions {
+    background: rgba(30, 30, 30, 0.95);
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+body[class*="theme-"] .suggestions li {
+    border-bottom-color: rgba(255, 255, 255, 0.1);
+}
+
+body[class*="theme-"] .suggestion-name {
+    color: #eee;
+}
+
+body[class*="theme-"] .suggestion-sub {
+    color: rgba(255, 255, 255, 0.5);
+}
+
+body[class*="theme-"] .suggestions li:hover, 
+body[class*="theme-"] .suggestions li.selected {
+    background: rgba(255, 255, 255, 0.1);
+    color: #fff;
+}
+
+@keyframes slideDown {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
 }
 
 #search-btn {
@@ -365,6 +477,10 @@ body[class*="theme-"] .lead {
     padding-right: 8px;
     border-left: 1px solid #eee;
     padding-left: 8px;
+}
+
+body[class*="theme-"] .unit-toggle {
+    border-left-color: rgba(255, 255, 255, 0.1);
 }
 
 .unit-toggle button {

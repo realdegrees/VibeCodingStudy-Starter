@@ -28,20 +28,23 @@
           Visuell ansprechende, responsive Wetter-App — Suche nach Stadtname
         </p>
         <form id="search-form" aria-label="Stadt suchen">
-          <label for="city-input" class="visually-hidden">Stadtname</label>
-          <input
-            id="city-input"
-            name="city"
-            type="search"
-            placeholder="Stadt eingeben (z. B. Berlin)"
-            aria-required="true"
-          />
-          <ul
-            id="suggestions"
-            class="suggestions hidden"
-            role="listbox"
-            aria-label="Suchvorschläge"
-          ></ul>
+          <div class="search-wrapper">
+            <label for="city-input" class="visually-hidden">Stadtname</label>
+            <input
+              id="city-input"
+              name="city"
+              type="search"
+              placeholder="Stadt eingeben (z. B. Berlin)"
+              aria-required="true"
+              autocomplete="off"
+            />
+            <ul
+              id="suggestions"
+              class="suggestions hidden"
+              role="listbox"
+              aria-label="Suchvorschläge"
+            ></ul>
+          </div>
           <button id="search-btn" type="submit">Suchen</button>
           <div class="unit-toggle">
             <label for="unit-toggle" class="visually-hidden"

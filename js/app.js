@@ -174,35 +174,24 @@ const app = {
       this.setStatus(`Lade Wetter für ${placeName}...`);
 
       // Forecast: include hourly temperatures, humidity, apparent temp and daily summaries
-      const forecastUrl = `${config.API_URL}/forecast?latitude=${lat}&longitude=${lon}&current_weather=true&hourly=temperature_2m,relativehumidity_2m,apparent_temperature&daily=temperature_2m_max,temperature_2m_min,weathercode&timezone=auto`;
+      // Using 'current' parameter for robust current weather data including humidity/feels_like
+      const forecastUrl = `${config.API_URL}/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,apparent_temperature,weather_code,wind_speed_10m&hourly=temperature_2m,relative_humidity_2m,apparent_temperature&daily=temperature_2m_max,temperature_2m_min,weather_code&timezone=auto`;
       const weatherRes = await fetch(forecastUrl);
       if (!weatherRes.ok) throw new Error('Wetterdaten konnten nicht geladen werden');
       const data = await weatherRes.json();
 
-      // Extract humidity & feels-like for the current time
-      let humidity = null;
-      let feels_like = null;
-      try {
-        const time = data.current_weather.time;
-        const idx = data.hourly.time.indexOf(time);
-        if (idx !== -1) {
-          humidity = data.hourly.relativehumidity_2m[idx];
-          feels_like = data.hourly.apparent_temperature[idx];
-        }
-      } catch (e) {
-        // ignore, optional fields
-      }
-
+      const current = data.current || {};
+      
       const payload = {
         city: placeName,
         lat,
         lon,
-        temperature: data.current_weather.temperature,
-        windspeed: data.current_weather.windspeed,
-        weathercode: data.current_weather.weathercode,
-        time: data.current_weather.time,
-        humidity,
-        feels_like,
+        temperature: current.temperature_2m,
+        windspeed: current.wind_speed_10m,
+        weathercode: current.weather_code,
+        time: current.time,
+        humidity: current.relative_humidity_2m,
+        feels_like: current.apparent_temperature,
         hourly: data.hourly || null,
         daily: data.daily || null,
       };
@@ -223,32 +212,23 @@ const app = {
       this.setStatus(`Lade Wetter für ${name || lat + ',' + lon}...`);
       if (this.todaySection) this.todaySection.classList.add('hidden');
       if (this.weeklySection) this.weeklySection.classList.add('hidden');
-      const forecastUrl = `${config.API_URL}/forecast?latitude=${lat}&longitude=${lon}&current_weather=true&hourly=temperature_2m,relativehumidity_2m,apparent_temperature&daily=temperature_2m_max,temperature_2m_min,weathercode&timezone=auto`;
+      const forecastUrl = `${config.API_URL}/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,apparent_temperature,weather_code,wind_speed_10m&hourly=temperature_2m,relative_humidity_2m,apparent_temperature&daily=temperature_2m_max,temperature_2m_min,weather_code&timezone=auto`;
       const weatherRes = await fetch(forecastUrl);
       if (!weatherRes.ok) throw new Error('Wetterdaten konnten nicht geladen werden');
       const data = await weatherRes.json();
 
-      let humidity = null;
-      let feels_like = null;
-      try {
-        const time = data.current_weather.time;
-        const idx = data.hourly.time.indexOf(time);
-        if (idx !== -1) {
-          humidity = data.hourly.relativehumidity_2m[idx];
-          feels_like = data.hourly.apparent_temperature[idx];
-        }
-      } catch (e) {}
+      const current = data.current || {};
 
       const payload = {
         city: name || `${lat},${lon}`,
         lat,
         lon,
-        temperature: data.current_weather.temperature,
-        windspeed: data.current_weather.windspeed,
-        weathercode: data.current_weather.weathercode,
-        time: data.current_weather.time,
-        humidity,
-        feels_like,
+        temperature: current.temperature_2m,
+        windspeed: current.wind_speed_10m,
+        weathercode: current.weather_code,
+        time: current.time,
+        humidity: current.relative_humidity_2m,
+        feels_like: current.apparent_temperature,
         hourly: data.hourly || null,
         daily: data.daily || null,
       };
@@ -423,7 +403,7 @@ const app = {
         for (let i = start; i < end; i++) {
           const t = times[i];
           const temp = d.hourly.temperature_2m[i];
-          const hum = Array.isArray(d.hourly.relativehumidity_2m) ? d.hourly.relativehumidity_2m[i] : null;
+          const hum = Array.isArray(d.hourly.relative_humidity_2m) ? d.hourly.relative_humidity_2m[i] : null;
           const app = Array.isArray(d.hourly.apparent_temperature) ? d.hourly.apparent_temperature[i] : null;
           const item = document.createElement('div');
           item.className = 'hourly-item';
