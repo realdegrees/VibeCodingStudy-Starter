@@ -899,6 +899,42 @@ body[class*="theme-"] #weekly-forecast h2 {
 
 .weather-main { margin: 0; }
 
+/* Animations */
+@keyframes fadeSlideUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.animate-enter {
+    animation: fadeSlideUp 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+    opacity: 0; /* Start hidden */
+}
+
+/* Stagger delays for children */
+.weather-card.animate-enter { animation-delay: 0.1s; }
+.weather-details.animate-enter { animation-delay: 0.2s; }
+
+/* Specific stagger for lists if we apply class to items */
+.hourly-item.animate-enter:nth-child(1) { animation-delay: 0.1s; }
+.hourly-item.animate-enter:nth-child(2) { animation-delay: 0.15s; }
+.hourly-item.animate-enter:nth-child(3) { animation-delay: 0.2s; }
+.hourly-item.animate-enter:nth-child(4) { animation-delay: 0.25s; }
+.hourly-item.animate-enter:nth-child(5) { animation-delay: 0.3s; }
+.hourly-item.animate-enter:nth-child(n+6) { animation-delay: 0.35s; }
+
+.daily-card.animate-enter:nth-child(1) { animation-delay: 0.2s; }
+.daily-card.animate-enter:nth-child(2) { animation-delay: 0.25s; }
+.daily-card.animate-enter:nth-child(3) { animation-delay: 0.3s; }
+.daily-card.animate-enter:nth-child(4) { animation-delay: 0.35s; }
+.daily-card.animate-enter:nth-child(5) { animation-delay: 0.4s; }
+.daily-card.animate-enter:nth-child(n+6) { animation-delay: 0.45s; }
+
 @media (max-width: 699px) {
     .weather-card { flex-direction: column; align-items: flex-start; }
     .weather-card .weather-left { flex: none; }

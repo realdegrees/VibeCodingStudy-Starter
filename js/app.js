@@ -4,6 +4,22 @@ const app = {
     this.bind();
     this.loadFavorites();
     this.renderFavorites();
+    
+    // Load last search
+    const last = localStorage.getItem('lastCity');
+    if (last) {
+      try {
+        const parsed = JSON.parse(last);
+        if (parsed.lat && parsed.lon) {
+          this.fetchForecastByCoords(parsed.lat, parsed.lon, parsed.name);
+        } else {
+          this.fetchWeather(parsed);
+        }
+      } catch(e) {
+        // legacy or string
+        this.fetchWeather(last);
+      }
+    }
   },
 
   cache() {
@@ -230,7 +246,7 @@ const app = {
 
       // Forecast: include hourly temperatures, humidity, apparent temp and daily summaries
       // Using 'current' parameter for robust current weather data including humidity/feels_like
-      const forecastUrl = `${config.API_URL}/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,apparent_temperature,weather_code,wind_speed_10m&hourly=temperature_2m,relative_humidity_2m,apparent_temperature&daily=temperature_2m_max,temperature_2m_min,weather_code,sunrise,sunset&timezone=auto`;
+      const forecastUrl = `${config.API_URL}/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,apparent_temperature,weather_code,wind_speed_10m,surface_pressure&hourly=temperature_2m,relative_humidity_2m,apparent_temperature&daily=temperature_2m_max,temperature_2m_min,weather_code,sunrise,sunset,uv_index_max&timezone=auto`;
       const weatherRes = await fetch(forecastUrl);
       if (!weatherRes.ok) throw new Error('Wetterdaten konnten nicht geladen werden');
       const data = await weatherRes.json();
@@ -247,11 +263,16 @@ const app = {
         time: current.time,
         humidity: current.relative_humidity_2m,
         feels_like: current.apparent_temperature,
+        pressure: current.surface_pressure,
         hourly: data.hourly || null,
         daily: data.daily || null,
         sunrise: data.daily?.sunrise?.[0],
         sunset: data.daily?.sunset?.[0],
+        uv_index: data.daily?.uv_index_max?.[0],
       };
+
+      // Save to localStorage
+      localStorage.setItem('lastCity', JSON.stringify({ name: placeName, lat, lon }));
 
       // store raw payload (temperatures are in °C from API)
       this.lastData = payload;
@@ -269,7 +290,7 @@ const app = {
       this.setStatus(`Lade Wetter für ${name || lat + ',' + lon}...`);
       if (this.todaySection) this.todaySection.classList.add('hidden');
       if (this.weeklySection) this.weeklySection.classList.add('hidden');
-      const forecastUrl = `${config.API_URL}/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,apparent_temperature,weather_code,wind_speed_10m&hourly=temperature_2m,relative_humidity_2m,apparent_temperature&daily=temperature_2m_max,temperature_2m_min,weather_code,sunrise,sunset&timezone=auto`;
+      const forecastUrl = `${config.API_URL}/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,apparent_temperature,weather_code,wind_speed_10m,surface_pressure&hourly=temperature_2m,relative_humidity_2m,apparent_temperature&daily=temperature_2m_max,temperature_2m_min,weather_code,sunrise,sunset,uv_index_max&timezone=auto`;
       const weatherRes = await fetch(forecastUrl);
       if (!weatherRes.ok) throw new Error('Wetterdaten konnten nicht geladen werden');
       const data = await weatherRes.json();
@@ -286,11 +307,17 @@ const app = {
         time: current.time,
         humidity: current.relative_humidity_2m,
         feels_like: current.apparent_temperature,
+        pressure: current.surface_pressure,
         hourly: data.hourly || null,
         daily: data.daily || null,
         sunrise: data.daily?.sunrise?.[0],
         sunset: data.daily?.sunset?.[0],
+        uv_index: data.daily?.uv_index_max?.[0],
       };
+      
+      // Save to localStorage
+      localStorage.setItem('lastCity', JSON.stringify({ name: payload.city, lat, lon }));
+
       this.lastData = payload;
       this.displayWeather(this.lastData);
       this.setStatus('');
@@ -382,7 +409,7 @@ const app = {
     const [desc, emoji] = this.weatherCodeToDesc(d.weathercode);
 
     const card = document.createElement('div');
-    card.className = 'weather-card';
+    card.className = 'weather-card animate-enter';
     card.innerHTML = `
       <div class="weather-left">
         <div class="weather-emoji" aria-hidden="true" style="font-size:2rem">${emoji}</div>
@@ -433,7 +460,7 @@ const app = {
     }
     // Details grid (humidity, wind, feels-like, time)
     const details = document.createElement('div');
-    details.className = 'weather-details';
+    details.className = 'weather-details animate-enter';
 
     const makeDetail = (label, value) => {
       const el = document.createElement('div');
@@ -448,6 +475,8 @@ const app = {
     details.appendChild(makeDetail('Gefühlt', d.feels_like != null ? this.formatTemp(d.feels_like) : '—'));
     if (d.sunrise) details.appendChild(makeDetail('Sonnenaufgang', this.formatHour(d.sunrise)));
     if (d.sunset) details.appendChild(makeDetail('Sonnenuntergang', this.formatHour(d.sunset)));
+    if (d.uv_index != null) details.appendChild(makeDetail('UV-Index', d.uv_index));
+    if (d.pressure != null) details.appendChild(makeDetail('Luftdruck', d.pressure + ' hPa'));
 
     if (this.rightCol) this.rightCol.appendChild(details);
     else this.weatherEl.appendChild(details);
@@ -489,7 +518,7 @@ const app = {
           const hum = Array.isArray(d.hourly.relative_humidity_2m) ? d.hourly.relative_humidity_2m[i] : null;
           const app = Array.isArray(d.hourly.apparent_temperature) ? d.hourly.apparent_temperature[i] : null;
           const item = document.createElement('div');
-          item.className = 'hourly-item';
+          item.className = 'hourly-item animate-enter';
           item.setAttribute('role', 'listitem');
           item.dataset.time = t;
           if (hum != null) item.dataset.humidity = hum;
@@ -503,7 +532,7 @@ const app = {
         }
       } else {
         const ph = document.createElement('div');
-        ph.className = 'hourly-item';
+        ph.className = 'hourly-item animate-enter';
         ph.textContent = 'Stündliche Daten nicht verfügbar.';
         hourlyContainer.appendChild(ph);
         if (this.todaySection) this.todaySection.classList.remove('hidden');
@@ -525,7 +554,7 @@ const app = {
           const [wdesc, wemoji] = this.weatherCodeToDesc(wcode);
 
           const card = document.createElement('div');
-          card.className = 'daily-card';
+          card.className = 'daily-card animate-enter';
           card.setAttribute('role', 'listitem');
           card.dataset.day = day;
           card.dataset.max = max;
@@ -540,7 +569,7 @@ const app = {
         }
       } else {
         const ph = document.createElement('div');
-        ph.className = 'daily-card';
+        ph.className = 'daily-card animate-enter';
         ph.textContent = 'Tagesdaten nicht verfügbar.';
         weeklyContainer.appendChild(ph);
         if (this.weeklySection) this.weeklySection.classList.remove('hidden');
