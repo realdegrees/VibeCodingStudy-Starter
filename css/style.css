@@ -68,16 +68,20 @@ header h1 {
     display: grid;
     gap: 12px;
     margin-top: 12px;
+    align-items: stretch; /* ensure both columns stretch to same height */
 }
 
 .weather-card {
     display: flex;
-    align-items: center;
-    gap: 16px;
-    padding: 16px;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 12px;
     background: white;
     border-radius: 12px;
     box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+    height: 100%; /* stretch to match the height of the details column */
 }
 
 .weather-main {
@@ -158,18 +162,25 @@ header h1 {
 /* Current weather details grid */
 .weather-details {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    grid-template-columns: 1fr; /* stack vertically in the details column */
+    grid-auto-rows: 1fr; /* make each detail-item take equal height */
     gap: 12px;
-    margin-top: 12px;
+    margin-top: 0;
+    height: 100%; /* fill the right column */
 }
 
 .detail-item {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
     background: linear-gradient(180deg, #ffffff, #fbfdff);
     border: 1px solid rgba(34,49,63,0.05);
     border-radius: 10px;
     padding: 12px;
     text-align: center;
     box-shadow: 0 1px 3px rgba(16,24,40,0.03);
+    height: 100%;
 }
 
 .detail-label {
