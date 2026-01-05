@@ -1,9 +1,15 @@
 :root {
-    /* Beispiel-Variablen - optional nutzen */
-    --primary-color: #3498db;
+    /* Accessible Colors */
+    --primary-color: #1d72b8; /* Darker blue for WCAG AA compliance */
+    --primary-hover: #155a96;
     --secondary-color: #2c3e50;
-    --background: #ecf0f1;
-    --text-color: #333;
+    --background: #f0f4f8;
+    --text-color: #1f2937;
+    --card-bg: #ffffff;
+    --border-radius-lg: 12px;
+    --border-radius-sm: 8px;
+    --shadow-sm: 0 1px 3px rgba(0,0,0,0.1);
+    --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06);
 }
 
 body {
@@ -11,6 +17,9 @@ body {
     color: var(--text-color);
     transition: background 0.5s ease, color 0.5s ease;
     min-height: 100vh;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
 }
 
 /* Dynamic Weather Themes */
@@ -58,17 +67,33 @@ body.theme-stormy {
 
 /* Adjust card backgrounds for better contrast on themes */
 body[class*="theme-"] .weather-card,
-body[class*="theme-"] .details-grid,
-body[class*="theme-"] .hourly-scroll,
-body[class*="theme-"] .weekly-list,
+body[class*="theme-"] .weather-details,
+body[class*="theme-"] .hourly-list,
+body[class*="theme-"] .weekly-grid,
 body[class*="theme-"] .sidebar {
-    background: rgba(255, 255, 255, 0.9);
-    color: #333; /* Force dark text inside cards */
+    background: rgba(255, 255, 255, 0.95); /* Slightly more opaque */
+    color: #1f2937; /* Force dark text inside cards */
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+}
+
+/* Force dark text on specific children to override theme inheritance */
+body[class*="theme-"] .weather-main,
+body[class*="theme-"] .weather-meta,
+body[class*="theme-"] .detail-value,
+body[class*="theme-"] .hourly-temp,
+body[class*="theme-"] .daily-temps {
+    color: #1f2937;
+}
+
+body[class*="theme-"] .detail-label,
+body[class*="theme-"] .hourly-time,
+body[class*="theme-"] .daily-day {
+    color: #4b5563;
 }
 
 /* Ensure sidebar text is readable */
 body[class*="theme-"] .sidebar {
-    color: #333;
+    color: #1f2937;
 }
 
 #app {
@@ -164,6 +189,7 @@ header h1 {
     right: 0;
     top: calc(100% + 8px);
     background: #fff;
+    color: #1f2937; /* Force dark text */
     border: 1px solid rgba(34,49,63,0.06);
     border-radius: 8px;
     box-shadow: 0 8px 24px rgba(2,6,23,0.08);
@@ -180,6 +206,7 @@ header h1 {
     cursor: pointer;
     display: flex;
     flex-direction: column;
+    color: #1f2937; /* Force dark text */
 }
 .suggestion-item:hover,
 .suggestion-item.active {
@@ -190,19 +217,26 @@ header h1 {
 
 #city-input {
     flex: 1 1 320px;
-    padding: 10px 12px;
-    border: 1px solid #cfd8e3;
-    border-radius: 8px;
+    padding: 12px 16px;
+    border: 2px solid #cfd8e3;
+    border-radius: var(--border-radius-sm);
     font-size: 1rem;
+    transition: border-color 0.2s;
 }
 
 #search-btn {
-    padding: 10px 14px;
+    padding: 12px 20px;
     background: var(--primary-color);
     color: white;
     border: none;
-    border-radius: 8px;
+    border-radius: var(--border-radius-sm);
     cursor: pointer;
+    font-weight: 600;
+    transition: background-color 0.2s;
+}
+
+#search-btn:hover {
+    background: var(--primary-hover);
 }
 
 .unit-toggle {
@@ -211,56 +245,90 @@ header h1 {
 
 .unit-toggle button {
     background: transparent;
-    border: 1px solid rgba(0,0,0,0.08);
-    padding: 6px 10px;
-    border-radius: 8px;
+    border: 2px solid #e5e7eb;
+    padding: 8px 12px;
+    border-radius: var(--border-radius-sm);
     cursor: pointer;
+    font-weight: 600;
+    color: var(--text-color);
+    transition: all 0.2s;
+}
+
+.unit-toggle button:hover {
+    border-color: var(--primary-color);
+    color: var(--primary-color);
 }
 
 .unit-toggle button[aria-pressed="true"] {
     background: var(--primary-color);
     color: #fff;
-    border-color: transparent;
+    border-color: var(--primary-color);
 }
 
 /* Heart button on card */
 .fav-add {
     background: transparent;
-    border: 1px solid rgba(0,0,0,0.06);
-    padding: 4px 8px;
-    border-radius: 6px;
+    border: 2px solid #e5e7eb;
+    padding: 6px 10px;
+    border-radius: var(--border-radius-sm);
     cursor: pointer;
     margin-left: 8px;
+    transition: all 0.2s;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
 }
+
+.fav-add:hover {
+    border-color: #e74c3c;
+    color: #e74c3c;
+}
+
 .fav-add.active {
-    background: var(--primary-color);
+    background: #e74c3c;
     color: #fff;
-    border-color: transparent;
+    border-color: #e74c3c;
+}
+
+/* Accessible Focus States */
+*:focus-visible {
+    outline: 3px solid var(--primary-color);
+    outline-offset: 2px;
 }
 
 #search-btn:focus,
 #city-input:focus {
-    outline: 3px solid rgba(52,152,219,0.2);
+    outline: none; /* handled by focus-visible or custom below */
+}
+
+#city-input:focus {
+    border-color: var(--primary-color);
+    outline: 3px solid rgba(29, 114, 184, 0.2);
+}
+
+#search-btn:focus-visible {
+    outline: 3px solid var(--secondary-color);
+    outline-offset: 2px;
 }
 
 /* Weather card */
 #weather {
     display: grid;
-    gap: 12px;
-    margin-top: 12px;
-    align-items: stretch; /* ensure both columns stretch to same height */
+    gap: 16px;
+    margin-top: 16px;
+    align-items: stretch; 
 }
 
 .weather-card {
     display: flex;
-    flex-direction: row; /* icon left, details right */
-    align-items: center; /* center vertically to remove large whitespace */
-    gap: 16px;
-    padding: 10px;
-    background: white;
-    border-radius: 12px;
-    box-shadow: 0 1px 4px rgba(0,0,0,0.06);
-    height: 100%; /* stretch to match the height of the details column */
+    flex-direction: row; 
+    align-items: center; 
+    gap: 20px;
+    padding: 24px;
+    background: var(--card-bg);
+    border-radius: var(--border-radius-lg);
+    box-shadow: var(--shadow-md);
+    height: 100%; 
 }
 
 .weather-main {

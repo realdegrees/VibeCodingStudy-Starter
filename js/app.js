@@ -349,9 +349,15 @@ const app = {
       favBtn.className = 'fav-add';
       favBtn.title = 'Zu Favoriten hinzufügen';
       favBtn.textContent = '❤';
+      
       // reflect current favorite state
       const isFav = (d.lat != null && d.lon != null) ? this.isFavorite(d.lat, d.lon) : false;
       if (isFav) favBtn.classList.add('active');
+      
+      // Accessibility
+      favBtn.setAttribute('aria-label', isFav ? 'Aus Favoriten entfernen' : 'Zu Favoriten hinzufügen');
+      favBtn.setAttribute('aria-pressed', isFav ? 'true' : 'false');
+
       favBtn.addEventListener('click', (e) => {
         e.stopPropagation();
         if (d.lat != null && d.lon != null) {
@@ -359,9 +365,13 @@ const app = {
           if (this.isFavorite(d.lat, d.lon)) {
             this.removeFavoriteByCoords(d.lat, d.lon);
             favBtn.classList.remove('active');
+            favBtn.setAttribute('aria-label', 'Zu Favoriten hinzufügen');
+            favBtn.setAttribute('aria-pressed', 'false');
           } else {
             this.addFavorite(d.city, d.lat, d.lon);
             favBtn.classList.add('active');
+            favBtn.setAttribute('aria-label', 'Aus Favoriten entfernen');
+            favBtn.setAttribute('aria-pressed', 'true');
           }
         }
       });
@@ -632,16 +642,32 @@ const app = {
     this.favorites.forEach((f, i) => {
       const el = document.createElement('div');
       el.className = 'favorite-item';
+      el.setAttribute('role', 'button');
+      el.setAttribute('tabindex', '0');
+      el.setAttribute('aria-label', `Wetter für ${f.name} laden`);
       el.innerHTML = `<div class="fav-name">${f.name}</div>`;
-      el.addEventListener('click', () => {
-        // set search field and fetch
+      
+      const loadFav = () => {
         if (this.input) this.input.value = f.name;
         this.fetchWeather({ name: f.name, lat: f.lat, lon: f.lon });
+      };
+
+      el.addEventListener('click', loadFav);
+      el.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          loadFav();
+        }
       });
+
       const btn = document.createElement('button');
       btn.innerHTML = '✕';
       btn.title = 'Entfernen';
-      btn.addEventListener('click', (e) => { e.stopPropagation(); this.removeFavorite(i); });
+      btn.setAttribute('aria-label', `${f.name} aus Favoriten entfernen`);
+      btn.addEventListener('click', (e) => { 
+        e.stopPropagation(); 
+        this.removeFavorite(i); 
+      });
       el.appendChild(btn);
       this.favContainer.appendChild(el);
     });
