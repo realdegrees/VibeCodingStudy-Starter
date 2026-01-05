@@ -32,7 +32,18 @@
 
       <main>
         <section id="status" aria-live="polite"></section>
-        <section id="weather" aria-label="Aktuelles Wetter"></section>
+        <section id="weather" aria-label="Aktuelles Wetter">
+          <div
+            id="weather-left"
+            class="weather-column"
+            aria-hidden="false"
+          ></div>
+          <aside
+            id="weather-right"
+            class="weather-column"
+            aria-label="Weitere Wetterdaten"
+          ></aside>
+        </section>
 
         <section id="today-hourly" aria-label="Stündliche Vorhersage">
           <h2>Heute — Stündlich</h2>

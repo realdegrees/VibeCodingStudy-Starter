@@ -9,6 +9,8 @@ const app = {
     this.input = document.getElementById('city-input');
     this.status = document.getElementById('status');
     this.weatherEl = document.getElementById('weather');
+    this.leftCol = document.getElementById('weather-left');
+    this.rightCol = document.getElementById('weather-right');
   },
 
   bind() {
@@ -106,7 +108,9 @@ const app = {
   },
 
   displayWeather(d) {
-    this.weatherEl.innerHTML = '';
+    // Clear left/right columns explicitly
+    if (this.leftCol) this.leftCol.innerHTML = '';
+    if (this.rightCol) this.rightCol.innerHTML = '';
     const [desc, emoji] = this.weatherCodeToDesc(d.weathercode);
 
     const card = document.createElement('div');
@@ -122,7 +126,8 @@ const app = {
       </div>
     `;
 
-    this.weatherEl.appendChild(card);
+    if (this.leftCol) this.leftCol.appendChild(card);
+    else this.weatherEl.appendChild(card);
     // Details grid (humidity, wind, feels-like, time)
     const details = document.createElement('div');
     details.className = 'weather-details';
@@ -139,7 +144,8 @@ const app = {
     details.appendChild(makeDetail('Wind', d.windspeed != null ? d.windspeed + ' km/h' : '—'));
     details.appendChild(makeDetail('Gefühlt', d.feels_like != null ? Math.round(d.feels_like) + '°' : '—'));
 
-    this.weatherEl.appendChild(details);
+    if (this.rightCol) this.rightCol.appendChild(details);
+    else this.weatherEl.appendChild(details);
     // Hourly
     const hourlyContainer = document.getElementById('hourly');
     if (hourlyContainer) {
