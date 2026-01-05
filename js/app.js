@@ -246,7 +246,7 @@ const app = {
 
       // Forecast: include hourly temperatures, humidity, apparent temp and daily summaries
       // Using 'current' parameter for robust current weather data including humidity/feels_like
-      const forecastUrl = `${config.API_URL}/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,apparent_temperature,weather_code,wind_speed_10m,surface_pressure&hourly=temperature_2m,relative_humidity_2m,apparent_temperature&daily=temperature_2m_max,temperature_2m_min,weather_code,sunrise,sunset,uv_index_max&timezone=auto`;
+      const forecastUrl = `${config.API_URL}/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,apparent_temperature,weather_code,wind_speed_10m,surface_pressure,visibility,wind_direction_10m&hourly=temperature_2m,relative_humidity_2m,apparent_temperature&daily=temperature_2m_max,temperature_2m_min,weather_code,sunrise,sunset,uv_index_max,precipitation_probability_max&timezone=auto`;
       const weatherRes = await fetch(forecastUrl);
       if (!weatherRes.ok) throw new Error('Wetterdaten konnten nicht geladen werden');
       const data = await weatherRes.json();
@@ -259,16 +259,19 @@ const app = {
         lon,
         temperature: current.temperature_2m,
         windspeed: current.wind_speed_10m,
+        winddir: current.wind_direction_10m,
         weathercode: current.weather_code,
         time: current.time,
         humidity: current.relative_humidity_2m,
         feels_like: current.apparent_temperature,
         pressure: current.surface_pressure,
+        visibility: current.visibility,
         hourly: data.hourly || null,
         daily: data.daily || null,
         sunrise: data.daily?.sunrise?.[0],
         sunset: data.daily?.sunset?.[0],
         uv_index: data.daily?.uv_index_max?.[0],
+        precip_prob: data.daily?.precipitation_probability_max?.[0],
       };
 
       // Save to localStorage
@@ -290,7 +293,7 @@ const app = {
       this.setStatus(`Lade Wetter für ${name || lat + ',' + lon}...`);
       if (this.todaySection) this.todaySection.classList.add('hidden');
       if (this.weeklySection) this.weeklySection.classList.add('hidden');
-      const forecastUrl = `${config.API_URL}/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,apparent_temperature,weather_code,wind_speed_10m,surface_pressure&hourly=temperature_2m,relative_humidity_2m,apparent_temperature&daily=temperature_2m_max,temperature_2m_min,weather_code,sunrise,sunset,uv_index_max&timezone=auto`;
+      const forecastUrl = `${config.API_URL}/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,apparent_temperature,weather_code,wind_speed_10m,surface_pressure,visibility,wind_direction_10m&hourly=temperature_2m,relative_humidity_2m,apparent_temperature&daily=temperature_2m_max,temperature_2m_min,weather_code,sunrise,sunset,uv_index_max,precipitation_probability_max&timezone=auto`;
       const weatherRes = await fetch(forecastUrl);
       if (!weatherRes.ok) throw new Error('Wetterdaten konnten nicht geladen werden');
       const data = await weatherRes.json();
@@ -303,16 +306,19 @@ const app = {
         lon,
         temperature: current.temperature_2m,
         windspeed: current.wind_speed_10m,
+        winddir: current.wind_direction_10m,
         weathercode: current.weather_code,
         time: current.time,
         humidity: current.relative_humidity_2m,
         feels_like: current.apparent_temperature,
         pressure: current.surface_pressure,
+        visibility: current.visibility,
         hourly: data.hourly || null,
         daily: data.daily || null,
         sunrise: data.daily?.sunrise?.[0],
         sunset: data.daily?.sunset?.[0],
         uv_index: data.daily?.uv_index_max?.[0],
+        precip_prob: data.daily?.precipitation_probability_max?.[0],
       };
       
       // Save to localStorage
@@ -471,8 +477,10 @@ const app = {
 
     details.appendChild(makeDetail('Uhrzeit', this.formatHour(d.time)));
     details.appendChild(makeDetail('Luftfeuchtigkeit', d.humidity != null ? d.humidity + '%' : '—'));
-    details.appendChild(makeDetail('Wind', d.windspeed != null ? d.windspeed + ' km/h' : '—'));
+    details.appendChild(makeDetail('Wind', d.windspeed != null ? `${d.windspeed} km/h ${this.getWindDir(d.winddir)}` : '—'));
     details.appendChild(makeDetail('Gefühlt', d.feels_like != null ? this.formatTemp(d.feels_like) : '—'));
+    if (d.precip_prob != null) details.appendChild(makeDetail('Regenrisiko', d.precip_prob + '%'));
+    if (d.visibility != null) details.appendChild(makeDetail('Sichtweite', (d.visibility / 1000).toFixed(1) + ' km'));
     if (d.sunrise) details.appendChild(makeDetail('Sonnenaufgang', this.formatHour(d.sunrise)));
     if (d.sunset) details.appendChild(makeDetail('Sonnenuntergang', this.formatHour(d.sunset)));
     if (d.uv_index != null) details.appendChild(makeDetail('UV-Index', d.uv_index));
@@ -575,6 +583,13 @@ const app = {
         if (this.weeklySection) this.weeklySection.classList.remove('hidden');
       }
     }
+  },
+
+  getWindDir(deg) {
+    if (deg == null) return '';
+    const dirs = ['N', 'NO', 'O', 'SO', 'S', 'SW', 'W', 'NW'];
+    const idx = Math.round(deg / 45) % 8;
+    return dirs[idx];
   },
 
   formatHour(iso) {
