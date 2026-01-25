@@ -1,0 +1,16 @@
+- test
+- test again
+- @agent Enable: "Enable Gemini 3 Pro (Preview) for all clients"
+- Read the project requirements and create a detailed plan to develop the requested app
+- ja
+- ja
+- wie starte ich die app?
+- now do the styling
+- add more hours to the daily, from 0 to 24. But it should only show 5 at once and be horizontal scrollable. Also the scroll position should start at the current hour 
+- the main current temperature is not centered correctly, please fix this
+- now implement the optional features
+- above the 7 day prediction, next to the title, add a label for "Tag" and "Nacht" to the temperatures
+- put the hourly and 7-day prediciton in their own cards
+- No i meant fully seperate cards
+- Can you update the styling to be more "clear glass"
+- a bit less transparent
