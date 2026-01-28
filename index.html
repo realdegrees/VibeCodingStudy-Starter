@@ -10,10 +10,19 @@
 <body>
     <div id="app">
         <header>
-            <h1>Weather UI Starter</h1>
+            <h1>Weather UI</h1>
+            <div class="search-container">
+                <input type="text" id="city-search" placeholder="Enter city name..." />
+                <button id="search-btn">Search</button>
+                <button id="unit-toggle" class="toggle-btn" title="Toggle °C/°F">°C</button>
+            </div>
+            <div id="error-message" class="error hidden"></div>
         </header>
+        <main id="weather-display" class="hidden">
+            <!-- Weather data will be injected here -->
+        </main>
     </div>
 
-    <script src="js/app.js" defer></script>
+    <script type="module" src="js/app.js" defer></script>
 </body>
 </html>
