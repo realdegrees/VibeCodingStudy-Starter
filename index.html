@@ -3,17 +3,53 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Weather UI</title>
+    <title>Weather App</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/style.css" />
-    <meta name="description" content="A basic web UI for the meteo weather application created in the context of a study on vibe coding." />
+    <meta name="description" content="Modern Weather App Dashboard" />
 </head>
 <body>
     <div id="app">
         <header>
-            <h1>Weather UI Starter</h1>
+            <div class="search-container">
+                <input type="text" id="city-search" placeholder="Search city..." aria-label="Search city">
+                <button id="search-btn" aria-label="Search">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                </button>
+            </div>
+            <div id="search-results" class="hidden"></div>
         </header>
+
+        <!-- 7-Day Forecast Grid -->
+        <section id="daily-forecast" class="hidden">
+            <!-- Daily cards will go here -->
+        </section>
+
+        <main id="weather-content" class="hidden">
+            <section class="current-weather">
+                <!-- Current weather data will go here -->
+            </section>
+            
+            <section class="forecast">
+                <!-- Forecast data will go here -->
+            </section>
+        </main>
+        
+        <div id="loading" class="hidden">
+            <div class="spinner"></div>
+        </div>
     </div>
 
-    <script src="js/app.js" defer></script>
+    <!-- Unit Toggle FAB -->
+    <button id="unit-toggle" class="fab" aria-label="Toggle Units">
+        <span class="unit-icon">°C</span>
+    </button>
+
+    <!-- Background Ivy Animation -->
+    <div id="ivy-container"></div>
+
+    <script type="module" src="js/app.js"></script>
 </body>
 </html>
