@@ -3,17 +3,110 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Weather UI</title>
+    <title>Weather Vibe</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/style.css" />
-    <meta name="description" content="A basic web UI for the meteo weather application created in the context of a study on vibe coding." />
+    <meta name="description" content="A premium weather application with glassmorphism design." />
 </head>
 <body>
-    <div id="app">
-        <header>
-            <h1>Weather UI Starter</h1>
-        </header>
+    <div id="app" class="container">
+        <!-- Background Elements -->
+        <div class="background-glob start"></div>
+        <div class="background-glob end"></div>
+
+        <main class="glass-panel">
+            <!-- Search Section -->
+            <header class="search-section">
+                <div class="search-container">
+                    <div class="search-bar">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="search-icon"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                        <input type="text" id="city-search" placeholder="Search for a city..." data-i18n-placeholder="searchPlaceholder" autocomplete="off">
+                        <button id="location-btn" title="Use Current Location">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="3 11 22 2 13 21 11 13 3 11"></polygon></svg>
+                        </button>
+                    </div>
+                    <ul id="autocomplete-list" class="autocomplete-list"></ul>
+                </div>
+                <div class="date-display" id="current-date">
+                    Loading date...
+                </div>
+            </header>
+
+            <!-- Current Weather Section -->
+            <section class="current-weather">
+                <div class="weather-main">
+                    <h1 id="city-name">New York</h1>
+                    <div class="temp-display">
+                        <span id="current-temp">24</span><span class="unit">°C</span>
+                    </div>
+                    <div class="weather-condition" id="weather-condition">Clear Sky</div>
+                </div>
+                
+                <div class="weather-grid">
+                    <div class="grid-item">
+                        <span class="label" data-i18n="humidity">Humidity</span>
+                        <span class="value" id="humidity">65%</span>
+                    </div>
+                    <div class="grid-item">
+                        <span class="label" data-i18n="windSpeed">Wind Speed</span>
+                        <span class="value" id="wind-speed">12 km/h</span>
+                    </div>
+                    <div class="grid-item">
+                        <span class="label" data-i18n="feelsLike">Feels Like</span>
+                        <span class="value" id="feels-like">26°C</span>
+                    </div>
+                    <div class="grid-item">
+                        <span class="label" data-i18n="rainChance">Rain Chance</span>
+                        <span class="value" id="rain-chance">10%</span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Hourly Forecast Section -->
+            <section class="hourly-forecast">
+                <div class="forecast-header">
+                    <div class="forecast-toggle">
+                        <button id="btn-hourly" class="toggle-btn active" data-i18n="forecastHourly">Hourly</button>
+                        <button id="btn-daily" class="toggle-btn" data-i18n="forecastDaily">7 Days</button>
+                    </div>
+                </div>
+                <div class="forecast-scroll" id="hourly-container">
+                    <!-- Hourly items will be injected here via JS -->
+                    <div class="hourly-item active">
+                        <span class="time">Now</span>
+                        <div class="icon">☀️</div>
+                        <span class="temp">24°</span>
+                    </div>
+                    <div class="hourly-item">
+                        <span class="time">14:00</span>
+                        <div class="icon">⛅</div>
+                        <span class="temp">25°</span>
+                    </div>
+                    <div class="hourly-item">
+                        <span class="time">15:00</span>
+                        <div class="icon">☁️</div>
+                        <span class="temp">24°</span>
+                    </div>
+                    <div class="hourly-item">
+                        <span class="time">16:00</span>
+                        <div class="icon">🌧️</div>
+                        <span class="temp">22°</span>
+                    </div>
+                     <div class="hourly-item">
+                        <span class="time">17:00</span>
+                        <div class="icon">🌧️</div>
+                        <span class="temp">21°</span>
+                    </div>
+                </div>
+            </section>
+        </main>
+        <button id="lang-switch" class="language-switch" title="Switch Language">DE</button>
+        <button id="unit-switch" class="unit-switch" title="Switch Unit">°C</button>
     </div>
 
+    <script src="js/config.js"></script>
     <script src="js/app.js" defer></script>
 </body>
 </html>

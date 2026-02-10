@@ -1,3 +1,4 @@
-export const config = {
-    API_URL: 'https://api.open-meteo.com/v1',
-}
+// Configuration settings can be added here
+const CONFIG = {
+    apiKey: 'YOUR_API_KEY_HERE' // Placeholder for future real API integration
+};

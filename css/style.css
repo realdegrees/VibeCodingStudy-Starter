@@ -1,3 +1,520 @@
 :root {
-    /* Beispiel-Variablen - optional nutzen */
+    --primary-bg: #0f0c29;
+    --secondary-bg: #302b63;
+    --accent-color: #24243e;
+    --text-color: #ffffff;
+    --glass-bg: rgba(255, 255, 255, 0.1);
+    --glass-border: rgba(255, 255, 255, 0.2);
+    --shadow-light: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+    --font-main: 'Outfit', sans-serif;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: var(--font-main);
+    background: linear-gradient(-45deg, #0f0c29, #302b63, #24243e);
+    background-size: 400% 400%;
+    animation: gradientBG 15s ease infinite;
+    color: var(--text-color);
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+    transition: background 1.5s ease;
+}
+
+/* Dynamic Weather Backgrounds */
+body.bg-cold {
+    background: linear-gradient(-45deg, #0f0c29, #302b63, #24243e);
+    background-size: 400% 400%;
+}
+
+body.bg-cool {
+    background: linear-gradient(-45deg, #1A2980, #26D0CE, #1A2980);
+    background-size: 400% 400%;
+}
+
+body.bg-warm {
+    background: linear-gradient(-45deg, #f6d365, #fda085, #f6d365);
+    /* Soft Peach/Yellow */
+    background-size: 400% 400%;
+}
+
+body.bg-hot {
+    background: linear-gradient(-45deg, #ff9966, #ff5e62, #ff9966);
+    /* Softer Sunset Orange */
+    background-size: 400% 400%;
+}
+
+@keyframes gradientBG {
+    0% {
+        background-position: 0% 50%;
+    }
+
+    50% {
+        background-position: 100% 50%;
+    }
+
+    100% {
+        background-position: 0% 50%;
+    }
+}
+
+.container {
+    position: relative;
+    width: 100%;
+    max-width: 480px;
+    height: 90vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+/* Background Globs for depth */
+.background-glob {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(80px);
+    opacity: 0.6;
+    z-index: 0;
+}
+
+.background-glob.start {
+    width: 300px;
+    height: 300px;
+    background: #ff00cc;
+    top: -50px;
+    left: -50px;
+    animation: float 6s ease-in-out infinite;
+}
+
+.background-glob.end {
+    width: 250px;
+    height: 250px;
+    background: #3333ff;
+    bottom: -50px;
+    right: -50px;
+    animation: float 8s ease-in-out infinite reverse;
+}
+
+@keyframes float {
+    0% {
+        transform: translateY(0px);
+    }
+
+    50% {
+        transform: translateY(-20px);
+    }
+
+    100% {
+        transform: translateY(0px);
+    }
+}
+
+/* Glass Panel */
+.glass-panel {
+    background: var(--glass-bg);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    border-radius: 20px;
+    border: 1px solid var(--glass-border);
+    box-shadow: var(--shadow-light);
+    width: 100%;
+    height: 100%;
+    /* Increased top padding to move content down */
+    padding: 2rem 2rem 5rem 2rem;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    overflow-y: auto;
+    /* Hide Scrollbar */
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+
+.glass-panel::-webkit-scrollbar {
+    display: none;
+}
+
+/* Search Section */
+.search-section {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.search-container {
+    position: relative;
+    width: 100%;
+}
+
+.search-bar {
+    display: flex;
+    align-items: center;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 12px;
+    padding: 0.5rem 1rem;
+    transition: all 0.3s ease;
+}
+
+.search-bar:focus-within {
+    background: rgba(0, 0, 0, 0.4);
+    box-shadow: 0 0 10px rgba(255, 255, 255, 0.1);
+}
+
+.search-icon {
+    margin-right: 0.5rem;
+    color: rgba(255, 255, 255, 0.7);
+}
+
+#city-search {
+    background: transparent;
+    border: none;
+    color: white;
+    font-size: 1rem;
+    width: 100%;
+    outline: none;
+    font-family: var(--font-main);
+    padding: 0.5rem 0;
+}
+
+#city-search::placeholder {
+    color: rgba(255, 255, 255, 0.5);
+}
+
+#location-btn {
+    background: transparent;
+    border: none;
+    color: rgba(255, 255, 255, 0.7);
+    cursor: pointer;
+    padding: 0.5rem;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+}
+
+#location-btn:hover {
+    color: white;
+    transform: scale(1.1);
+}
+
+/* Autocomplete List */
+.autocomplete-list {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    width: 100%;
+    background: rgba(15, 12, 41, 0.9);
+    /* Dark background for readability */
+    backdrop-filter: blur(10px);
+    border-radius: 12px;
+    margin-top: 0.5rem;
+    list-style: none;
+    overflow: hidden;
+    z-index: 100;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+    max-height: 200px;
+    overflow-y: auto;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.autocomplete-list:empty {
+    display: none;
+}
+
+.autocomplete-item {
+    padding: 0.8rem 1rem;
+    cursor: pointer;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    transition: background 0.2s;
+    font-size: 0.95rem;
+}
+
+.autocomplete-item:last-child {
+    border-bottom: none;
+}
+
+.autocomplete-item:hover {
+    background: rgba(255, 255, 255, 0.15);
+}
+
+.autocomplete-item .country-code {
+    font-size: 0.8rem;
+    opacity: 0.6;
+    background: rgba(255, 255, 255, 0.1);
+    padding: 0.1rem 0.3rem;
+    border-radius: 4px;
+    margin-left: 0.5rem;
+}
+
+.date-display {
+    font-size: 0.8rem;
+    /* Slightly smaller date */
+    color: rgba(255, 255, 255, 0.6);
+    text-align: right;
+}
+
+/* Current Weather */
+.current-weather {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    /* Reduced gap */
+    text-align: center;
+}
+
+.weather-main h1 {
+    font-size: 2.4rem;
+    /* Slightly larger */
+    font-weight: 700;
+    margin-bottom: 0.3rem;
+    text-shadow: 0 4px 4px rgba(0, 0, 0, 0.1);
+}
+
+.temp-display {
+    font-size: 5.5rem;
+    /* Slightly larger */
+    font-weight: 300;
+    line-height: 1;
+    margin: 0.8rem 0;
+    background: linear-gradient(to bottom, #fff, rgba(255, 255, 255, 0.5));
+    -webkit-background-clip: text;
+    background-clip: text;
+    /* color: transparent;  Removed to ensure visibility fallback */
+}
+
+.unit {
+    font-size: 2rem;
+    vertical-align: top;
+    opacity: 0.7;
+}
+
+.weather-condition {
+    font-size: 1.2rem;
+    opacity: 0.9;
+    padding: 0.5rem 1rem;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 20px;
+    display: inline-block;
+}
+
+.weather-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+}
+
+.grid-item {
+    background: rgba(255, 255, 255, 0.05);
+    padding: 1rem;
+    border-radius: 12px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.3rem;
+    transition: transform 0.2s ease;
+}
+
+.grid-item:hover {
+    transform: translateY(-2px);
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.grid-item .label {
+    font-size: 0.8rem;
+    color: rgba(255, 255, 255, 0.6);
+}
+
+.grid-item .value {
+    font-size: 1.1rem;
+    font-weight: 600;
+}
+
+/* Hourly Forecast */
+.hourly-forecast h2 {
+    font-size: 1.1rem;
+    margin-bottom: 1rem;
+    opacity: 0.8;
+}
+
+/* Forecast Header & Toggles */
+.forecast-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+    width: 100%;
+}
+
+.forecast-toggle {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+    background: transparent;
+    padding: 0;
+    gap: 1rem;
+}
+
+.toggle-btn {
+    background: transparent;
+    border: none;
+    color: rgba(255, 255, 255, 0.4);
+    /* Inactive: dimmed */
+    padding: 0.5rem;
+    font-size: 1.1rem;
+    /* Slightly larger like a header */
+    font-weight: 400;
+    cursor: pointer;
+    font-family: var(--font-main);
+    transition: all 0.3s ease;
+    text-shadow: none;
+}
+
+.toggle-btn:hover {
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.toggle-btn.active {
+    color: #ffffff;
+    font-weight: 700;
+    text-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+    background: transparent;
+    box-shadow: none;
+}
+
+/* Scroll Container */
+.forecast-scroll {
+    display: flex;
+    gap: 1rem;
+    overflow-x: auto;
+    padding-bottom: 1rem;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255, 255, 255, 0.3) transparent;
+    scroll-behavior: smooth;
+    /* Ensure items don't wrap */
+    flex-wrap: nowrap;
+}
+
+.forecast-scroll::-webkit-scrollbar {
+    height: 4px;
+}
+
+.forecast-scroll::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.forecast-scroll::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 4px;
+}
+
+/* Shared Item Styles */
+.hourly-item,
+.daily-item {
+    min-width: 80px;
+    /* Slightly wider for daily dates */
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 12px;
+    padding: 0.8rem 0.5rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.hourly-item:hover,
+.hourly-item.active {
+    background: rgba(255, 255, 255, 0.2);
+    transform: scale(1.05);
+}
+
+.hourly-item .time {
+    font-size: 0.8rem;
+    opacity: 0.7;
+}
+
+.hourly-item .icon {
+    font-size: 1.5rem;
+}
+
+.hourly-item .temp {
+    font-weight: 600;
+}
+
+@media (max-width: 480px) {
+    .container {
+        height: 100vh;
+        max-width: 100%;
+        border-radius: 0;
+    }
+
+    .glass-panel {
+        border-radius: 0;
+        border: none;
+    }
+}
+
+/* Language Switcher */
+.language-switch {
+    position: absolute;
+    bottom: 1.5rem;
+    right: 2rem;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: white;
+    font-family: var(--font-main);
+    font-weight: 600;
+    cursor: pointer;
+    backdrop-filter: blur(10px);
+    transition: all 0.3s ease;
+    z-index: 10;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 0.75rem;
+}
+
+.language-switch:hover {
+    background: rgba(255, 255, 255, 0.25);
+    transform: scale(1.1);
+}
+
+/* Unit Switcher */
+.unit-switch {
+    position: absolute;
+    bottom: 1.5rem;
+    left: 2rem;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: white;
+    font-family: var(--font-main);
+    font-weight: 600;
+    cursor: pointer;
+    backdrop-filter: blur(10px);
+    transition: all 0.3s ease;
+    z-index: 10;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 0.75rem;
+}
+
+.unit-switch:hover {
+    background: rgba(255, 255, 255, 0.25);
+    transform: scale(1.1);
 }
